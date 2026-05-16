@@ -7,6 +7,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CHECKLIST_PATH = PROJECT_ROOT / "issues" / "mobile-qa-checklist.md"
 LANDSCAPE_DECISION_PATH = PROJECT_ROOT / "issues" / "landscape-layout-decision.md"
 RESTART_DECISION_PATH = PROJECT_ROOT / "issues" / "restart-safety-decision.md"
+BROWSER_TEST_DECISION_PATH = PROJECT_ROOT / "issues" / "browser-interaction-test-decision.md"
 
 
 class MobileQaChecklistTests(unittest.TestCase):
@@ -75,6 +76,22 @@ class MobileQaChecklistTests(unittest.TestCase):
             "pause stays one tap",
             "desktop restart behavior remains unchanged",
             "mobile restart requires deliberate intent",
+        )
+        for content in required_content:
+            self.assertRegex(decision, re.compile(re.escape(content), re.IGNORECASE))
+
+    def test_browser_interaction_test_decision_is_recorded(self):
+        self.assertTrue(BROWSER_TEST_DECISION_PATH.exists(), "Browser interaction test decision should exist")
+        decision = BROWSER_TEST_DECISION_PATH.read_text(encoding="utf-8")
+
+        required_content = (
+            "issues/007-browser-interaction-test-decision.md",
+            "no browser automation needed yet",
+            "static test coverage remains green",
+            "manual Safari/Chrome QA checklist remains required",
+            "cross-platform",
+            "no platform-specific scripts",
+            "revisit if manual QA finds interaction regressions",
         )
         for content in required_content:
             self.assertRegex(decision, re.compile(re.escape(content), re.IGNORECASE))

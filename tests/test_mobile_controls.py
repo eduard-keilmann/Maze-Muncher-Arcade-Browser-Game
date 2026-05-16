@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-HTML_PATH = PROJECT_ROOT / "Pacman_maze_muncher_browser_arcade.html"
+HTML_PATH = PROJECT_ROOT / "maze_muncher_browser_arcade.html"
 HTML = HTML_PATH.read_text(encoding="utf-8")
 
 

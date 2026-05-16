@@ -58,6 +58,20 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'width:\s*min\(100%,\s*calc\(100svh\s*-\s*300px\)\)', "short portrait caps canvas height pressure")
         assert_html_contains(self, r'\.touch-controls\s*\{[^}]*order:\s*3;', "touch controls remain below canvas")
 
+    def test_held_direction_button_exposes_persistent_active_state(self):
+        for direction in ("up", "left", "down", "right"):
+            assert_html_contains(
+                self,
+                rf'data-direction="{direction}"[^>]*aria-pressed="false"',
+                f"{direction} D-pad starts unpressed",
+            )
+
+        assert_html_contains(self, r'\.touch-button\.is-held', "visible held-button CSS state")
+        assert_html_contains(self, r'classList\.add\("is-held"\)', "held button gets active class")
+        assert_html_contains(self, r'classList\.remove\("is-held"\)', "held button clears active class")
+        assert_html_contains(self, r'setAttribute\("aria-pressed",\s*"true"\)', "held button exposes pressed accessibility state")
+        assert_html_contains(self, r'setAttribute\("aria-pressed",\s*"false"\)', "released button clears pressed accessibility state")
+
 
 if __name__ == "__main__":
     unittest.main()

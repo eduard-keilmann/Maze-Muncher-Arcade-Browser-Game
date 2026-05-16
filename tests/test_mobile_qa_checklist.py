@@ -5,6 +5,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CHECKLIST_PATH = PROJECT_ROOT / "issues" / "mobile-qa-checklist.md"
+LANDSCAPE_DECISION_PATH = PROJECT_ROOT / "issues" / "landscape-layout-decision.md"
 
 
 class MobileQaChecklistTests(unittest.TestCase):
@@ -44,6 +45,23 @@ class MobileQaChecklistTests(unittest.TestCase):
         )
         for decision in required_decisions:
             self.assertRegex(checklist, re.compile(re.escape(decision), re.IGNORECASE))
+
+    def test_landscape_layout_decision_is_recorded(self):
+        self.assertTrue(LANDSCAPE_DECISION_PATH.exists(), "Landscape layout decision should exist")
+        decision = LANDSCAPE_DECISION_PATH.read_text(encoding="utf-8")
+
+        required_content = (
+            "issues/005-landscape-mobile-layout-decision.md",
+            "Representative Mobile Landscape Viewports",
+            "Decision",
+            "landscape layout required",
+            "controls reachable",
+            "controls do not cover the canvas",
+            "gameplay-disrupting page scroll",
+            "portrait layout remains unchanged",
+        )
+        for content in required_content:
+            self.assertRegex(decision, re.compile(re.escape(content), re.IGNORECASE))
 
 
 if __name__ == "__main__":

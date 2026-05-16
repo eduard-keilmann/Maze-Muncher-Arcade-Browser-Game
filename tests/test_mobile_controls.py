@@ -46,6 +46,18 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'actionName === "restart"', "restart action branch")
         assert_html_contains(self, r'newGame\(\)', "restart action calls existing restart behavior")
 
+    def test_short_portrait_layout_compacts_without_tiny_touch_targets(self):
+        assert_html_contains(
+            self,
+            r'@media\s*\(pointer:\s*coarse\)\s*and\s*\(max-height:\s*760px\)\s*and\s*\(orientation:\s*portrait\)',
+            "short portrait mobile media query",
+        )
+        assert_html_contains(self, r'--touch-size:\s*52px', "short portrait keeps thumb-friendly D-pad buttons")
+        assert_html_contains(self, r'--touch-action-height:\s*42px', "short portrait keeps usable action buttons")
+        assert_html_contains(self, r'--mobile-gap:\s*6px', "short portrait compacts vertical spacing")
+        assert_html_contains(self, r'width:\s*min\(100%,\s*calc\(100svh\s*-\s*300px\)\)', "short portrait caps canvas height pressure")
+        assert_html_contains(self, r'\.touch-controls\s*\{[^}]*order:\s*3;', "touch controls remain below canvas")
+
 
 if __name__ == "__main__":
     unittest.main()

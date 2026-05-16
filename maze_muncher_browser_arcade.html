@@ -12,6 +12,10 @@
       --text: #f9f7d7;
       --muted: #a7a6c7;
       --accent: #ffe85a;
+      --mobile-gap: 10px;
+      --touch-size: 58px;
+      --touch-gap: 8px;
+      --touch-action-height: 46px;
     }
 
     * { box-sizing: border-box; }
@@ -95,17 +99,17 @@
 
     .dpad {
       display: grid;
-      grid-template-columns: repeat(3, 58px);
-      grid-template-rows: repeat(3, 58px);
-      gap: 8px;
+      grid-template-columns: repeat(3, var(--touch-size));
+      grid-template-rows: repeat(3, var(--touch-size));
+      gap: var(--touch-gap);
       justify-content: center;
       align-items: center;
     }
 
     .touch-button,
     .dpad-spacer {
-      width: 58px;
-      height: 58px;
+      width: var(--touch-size);
+      height: var(--touch-size);
     }
 
     .touch-button {
@@ -140,7 +144,7 @@
 
     .touch-action-button {
       width: 116px;
-      height: 46px;
+      height: var(--touch-action-height);
       grid-auto-flow: column;
       gap: 6px;
       font-size: 0.84rem;
@@ -159,7 +163,7 @@
       }
 
       .shell {
-        gap: 10px;
+        gap: var(--mobile-gap);
       }
 
       h1 {
@@ -177,6 +181,40 @@
 
       .help {
         font-size: 0.78rem;
+      }
+    }
+
+    @media (pointer: coarse) and (max-height: 760px) and (orientation: portrait) {
+      :root {
+        --mobile-gap: 6px;
+        --touch-size: 52px;
+        --touch-gap: 6px;
+        --touch-action-height: 42px;
+      }
+
+      body {
+        padding: 6px;
+      }
+
+      h1 {
+        font-size: 1rem;
+        line-height: 1.1;
+      }
+
+      .frame {
+        width: min(100%, calc(100svh - 300px));
+        min-width: 270px;
+        padding: 6px;
+      }
+
+      .touch-controls {
+        order: 3;
+        gap: 6px;
+      }
+
+      .help {
+        font-size: 0.7rem;
+        line-height: 1.25;
       }
     }
   </style>

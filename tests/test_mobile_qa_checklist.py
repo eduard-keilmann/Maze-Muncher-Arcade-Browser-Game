@@ -6,6 +6,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CHECKLIST_PATH = PROJECT_ROOT / "issues" / "mobile-qa-checklist.md"
 LANDSCAPE_DECISION_PATH = PROJECT_ROOT / "issues" / "landscape-layout-decision.md"
+RESTART_DECISION_PATH = PROJECT_ROOT / "issues" / "restart-safety-decision.md"
 
 
 class MobileQaChecklistTests(unittest.TestCase):
@@ -59,6 +60,21 @@ class MobileQaChecklistTests(unittest.TestCase):
             "controls do not cover the canvas",
             "gameplay-disrupting page scroll",
             "portrait layout remains unchanged",
+        )
+        for content in required_content:
+            self.assertRegex(decision, re.compile(re.escape(content), re.IGNORECASE))
+
+    def test_restart_safety_decision_is_recorded(self):
+        self.assertTrue(RESTART_DECISION_PATH.exists(), "Restart safety decision should exist")
+        decision = RESTART_DECISION_PATH.read_text(encoding="utf-8")
+
+        required_content = (
+            "issues/006-safer-restart-interaction.md",
+            "safer restart required",
+            "long press",
+            "pause stays one tap",
+            "desktop restart behavior remains unchanged",
+            "mobile restart requires deliberate intent",
         )
         for content in required_content:
             self.assertRegex(decision, re.compile(re.escape(content), re.IGNORECASE))

@@ -46,6 +46,17 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'actionName === "restart"', "restart action branch")
         assert_html_contains(self, r'newGame\(\)', "restart action calls existing restart behavior")
 
+    def test_mobile_restart_requires_deliberate_long_press(self):
+        assert_html_contains(self, r'data-action="restart"[^>]*data-long-press-ms="900"', "restart declares long-press duration")
+        assert_html_contains(self, r'Hold restart', "restart button communicates long press")
+        assert_html_contains(self, r'let restartPressTimer = null;', "restart long-press timer exists")
+        assert_html_contains(self, r'function startRestartPress', "restart press start handler exists")
+        assert_html_contains(self, r'function cancelRestartPress', "restart press cancel handler exists")
+        assert_html_contains(self, r'setTimeout\(\(\) => \{[\s\S]*newGame\(\);[\s\S]*\},\s*restartLongPressMs\)', "restart only fires after timeout")
+        assert_html_contains(self, r'clearTimeout\(restartPressTimer\)', "restart press can be cancelled")
+        assert_html_contains(self, r'classList\.add\("is-arming"\)', "restart arming visual state starts")
+        assert_html_contains(self, r'classList\.remove\("is-arming"\)', "restart arming visual state clears")
+
     def test_short_portrait_layout_compacts_without_tiny_touch_targets(self):
         assert_html_contains(
             self,

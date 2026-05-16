@@ -6,11 +6,16 @@ No install. No build. Open one HTML file and play.
 
 ## Play
 
-Open:
+Open the actual game file in a browser:
 
 ```text
 maze_muncher_browser_arcade.html
 ```
+
+Or play online:
+
+- Gameplay instructions: https://eduard-keilmann.github.io/Maze-Muncher-Arcade-Browser-Game/
+- Play the game: https://eduard-keilmann.github.io/Maze-Muncher-Arcade-Browser-Game/maze_muncher_browser_arcade.html
 
 The game runs directly in a modern browser.
 

@@ -72,6 +72,18 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'setAttribute\("aria-pressed",\s*"true"\)', "held button exposes pressed accessibility state")
         assert_html_contains(self, r'setAttribute\("aria-pressed",\s*"false"\)', "released button clears pressed accessibility state")
 
+    def test_landscape_mobile_layout_places_controls_beside_canvas(self):
+        assert_html_contains(
+            self,
+            r'@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-height:\s*520px\)',
+            "landscape mobile media query",
+        )
+        assert_html_contains(self, r'grid-template-areas:\s*"title title"\s*"game controls"', "landscape uses side-by-side shell areas")
+        assert_html_contains(self, r'\.frame\s*\{[^}]*grid-area:\s*game;', "frame assigned to game area")
+        assert_html_contains(self, r'\.touch-controls\s*\{[^}]*grid-area:\s*controls;', "touch controls assigned beside canvas")
+        assert_html_contains(self, r'\.help\s*\{[^}]*display:\s*none;', "landscape hides help to reduce scroll pressure")
+        assert_html_contains(self, r'--touch-size:\s*50px', "landscape keeps thumb-friendly controls")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -83,6 +83,102 @@
       padding: 1px 6px;
       font-size: 0.82em;
     }
+
+    .touch-controls {
+      display: none;
+      width: min(100%, 320px);
+      justify-items: center;
+      gap: 10px;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 58px);
+      grid-template-rows: repeat(3, 58px);
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .touch-button,
+    .dpad-spacer {
+      width: 58px;
+      height: 58px;
+    }
+
+    .touch-button {
+      display: grid;
+      place-items: center;
+      border: 2px solid #3946d8;
+      border-radius: 10px;
+      background: #11113a;
+      color: #fff7a5;
+      font: 700 1.45rem/1 ui-monospace, Menlo, monospace;
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.42), 0 6px 18px rgba(0, 0, 0, 0.35);
+      touch-action: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .touch-button:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.42), 0 3px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .dpad-up { grid-column: 2; grid-row: 1; }
+    .dpad-left { grid-column: 1; grid-row: 2; }
+    .dpad-right { grid-column: 3; grid-row: 2; }
+    .dpad-down { grid-column: 2; grid-row: 3; }
+
+    .touch-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .touch-action-button {
+      width: 116px;
+      height: 46px;
+      grid-auto-flow: column;
+      gap: 6px;
+      font-size: 0.84rem;
+    }
+
+    .touch-action-button[data-action="restart"] {
+      color: #d7dcff;
+      border-color: #30367f;
+      background: #0b0b24;
+    }
+
+    @media (pointer: coarse), (max-width: 700px) {
+      body {
+        align-content: start;
+        padding: 10px;
+      }
+
+      .shell {
+        gap: 10px;
+      }
+
+      h1 {
+        font-size: clamp(1.1rem, 6vw, 1.65rem);
+      }
+
+      .frame {
+        width: min(100%, 620px);
+        padding: 8px;
+      }
+
+      .touch-controls {
+        display: grid;
+      }
+
+      .help {
+        font-size: 0.78rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -91,8 +187,31 @@
     <div class="frame">
       <canvas id="game" width="560" height="712" aria-label="Maze chase arcade game canvas"></canvas>
     </div>
+    <section class="touch-controls" aria-label="Touch controls">
+      <div class="dpad" aria-label="Directional pad">
+        <span class="dpad-spacer" aria-hidden="true"></span>
+        <button class="touch-button dpad-up" type="button" data-direction="up" aria-label="Move up">&#9650;</button>
+        <span class="dpad-spacer" aria-hidden="true"></span>
+        <button class="touch-button dpad-left" type="button" data-direction="left" aria-label="Move left">&#9664;</button>
+        <span class="dpad-spacer" aria-hidden="true"></span>
+        <button class="touch-button dpad-right" type="button" data-direction="right" aria-label="Move right">&#9654;</button>
+        <span class="dpad-spacer" aria-hidden="true"></span>
+        <button class="touch-button dpad-down" type="button" data-direction="down" aria-label="Move down">&#9660;</button>
+        <span class="dpad-spacer" aria-hidden="true"></span>
+      </div>
+      <div class="touch-actions">
+        <button class="touch-button touch-action-button" type="button" data-action="pause" aria-label="Pause game">
+          <span aria-hidden="true">II</span>
+          <span>PAUSE</span>
+        </button>
+        <button class="touch-button touch-action-button" type="button" data-action="restart" aria-label="Restart game">
+          <span aria-hidden="true">&#8635;</span>
+          <span>RESTART</span>
+        </button>
+      </div>
+    </section>
     <p class="help">
-      Move with <kbd>Arrow Keys</kbd> or <kbd>WASD</kbd>. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart. Swipe on touch screens.
+      Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart.
     </p>
   </main>
 
@@ -972,6 +1091,64 @@
 
     function togglePause() {
       if (state === "playing" || state === "ready") paused = !paused;
+    }
+
+    const touchControls = document.querySelector(".touch-controls");
+    let heldDirectionButton = null;
+    let holdRepeatId = null;
+
+    function applyTouchDirection(directionName) {
+      const dir = DIRS[directionName];
+      if (dir) setDirection(dir);
+    }
+
+    function applyTouchAction(actionName) {
+      if (actionName === "pause") {
+        if (state === "title" || state === "gameover") newGame();
+        else togglePause();
+      } else if (actionName === "restart") {
+        newGame();
+      }
+    }
+
+    function stopHoldingDirection(event) {
+      if (!heldDirectionButton) return;
+      if (event) event.preventDefault();
+      clearInterval(holdRepeatId);
+      holdRepeatId = null;
+      heldDirectionButton = null;
+    }
+
+    if (touchControls) {
+      touchControls.addEventListener("pointerdown", event => {
+        const actionButton = event.target.closest("[data-action]");
+        if (actionButton) {
+          event.preventDefault();
+          stopHoldingDirection();
+          const actionName = actionButton.dataset.action;
+          applyTouchAction(actionName);
+          return;
+        }
+
+        const directionButton = event.target.closest("[data-direction]");
+        if (!directionButton) return;
+
+        event.preventDefault();
+        stopHoldingDirection();
+
+        const directionName = directionButton.dataset.direction;
+        applyTouchDirection(directionName);
+        heldDirectionButton = directionButton;
+        holdRepeatId = setInterval(() => applyTouchDirection(directionName), 95);
+
+        if (directionButton.setPointerCapture) {
+          directionButton.setPointerCapture(event.pointerId);
+        }
+      }, { passive: false });
+
+      for (const eventName of ["pointerup", "pointercancel", "pointerleave"]) {
+        touchControls.addEventListener(eventName, stopHoldingDirection, { passive: false });
+      }
     }
 
     window.addEventListener("keydown", event => {

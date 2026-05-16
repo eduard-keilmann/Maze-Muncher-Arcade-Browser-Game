@@ -225,6 +225,59 @@
         line-height: 1.25;
       }
     }
+
+    @media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
+      :root {
+        --mobile-gap: 8px;
+        --touch-size: 50px;
+        --touch-gap: 6px;
+        --touch-action-height: 40px;
+      }
+
+      body {
+        align-content: center;
+        padding: 8px;
+      }
+
+      .shell {
+        width: min(100%, 960px);
+        grid-template-columns: minmax(280px, calc(100svh - 24px)) minmax(178px, 230px);
+        grid-template-areas:
+          "title title"
+          "game controls";
+        align-items: center;
+        justify-content: center;
+        gap: var(--mobile-gap);
+      }
+
+      h1 {
+        grid-area: title;
+        font-size: 0.95rem;
+        line-height: 1;
+      }
+
+      .frame {
+        grid-area: game;
+        width: 100%;
+        padding: 6px;
+      }
+
+      .touch-controls {
+        grid-area: controls;
+        display: grid;
+        width: 100%;
+        gap: 6px;
+      }
+
+      .touch-action-button {
+        width: 104px;
+        font-size: 0.74rem;
+      }
+
+      .help {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>

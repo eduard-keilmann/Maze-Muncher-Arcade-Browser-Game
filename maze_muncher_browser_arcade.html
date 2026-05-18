@@ -350,6 +350,8 @@
 
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d", { alpha: false });
+    const modeButton = document.querySelector('[data-action="mode"]');
+    const modeLabel = document.querySelector("[data-mode-label]");
 
     const TILE = 20;
     const COLS = 28;
@@ -362,6 +364,12 @@
 
     canvas.width = W;
     canvas.height = H;
+
+    const GAMEPLAY_MODE_STORAGE_KEY = "mazeMuncherGameplayMode";
+    const GAMEPLAY_MODES = [
+      { id: "maze-muncher", label: "MODE: MAZE MUNCHER", highScoreKey: "mazeMuncherHighScore" },
+      { id: "old-like", label: "MODE: OLD-LIKE", highScoreKey: "mazeMuncherOldLikeHighScore" }
+    ];
 
     const BASE_MAP = [
       "############################",
@@ -421,8 +429,22 @@
     let pelletsEaten = 0;
     let fruitMarks;
     let fruit = null;
+    function findGameplayMode(modeId) {
+      return GAMEPLAY_MODES.find(mode => mode.id === modeId) || GAMEPLAY_MODES[0];
+    }
+
+    function getStoredGameplayModeId() {
+      try { return localStorage.getItem(GAMEPLAY_MODE_STORAGE_KEY); } catch (_) { return null; }
+    }
+
+    let activeGameplayMode = findGameplayMode(getStoredGameplayModeId());
+
+    function readHighScore() {
+      try { return Number(localStorage.getItem(activeGameplayMode.highScoreKey) || 0); } catch (_) { return 0; }
+    }
+
     let score = 0;
-    let highScore = Number(localStorage.getItem("mazeMuncherHighScore") || 0);
+    let highScore = readHighScore();
     let level = 1;
     let lives = 3;
     let state = "title";
@@ -525,8 +547,29 @@
     function setHighScore() {
       if (score > highScore) {
         highScore = score;
-        try { localStorage.setItem("mazeMuncherHighScore", String(highScore)); } catch (_) {}
+        try { localStorage.setItem(activeGameplayMode.highScoreKey, String(highScore)); } catch (_) {}
       }
+    }
+
+    function renderGameplayMode() {
+      if (!modeLabel || !modeButton) return;
+      modeLabel.textContent = activeGameplayMode.label;
+      modeButton.setAttribute("aria-pressed", String(activeGameplayMode.id === "old-like"));
+    }
+
+    function setGameplayMode(modeId) {
+      activeGameplayMode = findGameplayMode(modeId);
+      try { localStorage.setItem(GAMEPLAY_MODE_STORAGE_KEY, activeGameplayMode.id); } catch (_) {}
+      highScore = readHighScore();
+      renderGameplayMode();
+    }
+
+    function toggleGameplayMode() {
+      if (state !== "title" && state !== "gameover") return;
+      const currentIndex = GAMEPLAY_MODES.indexOf(activeGameplayMode);
+      const nextMode = GAMEPLAY_MODES[(currentIndex + 1) % GAMEPLAY_MODES.length];
+      setGameplayMode(nextMode.id);
+      render();
     }
 
     function opposite(dir) {
@@ -1311,6 +1354,13 @@
       }
     }
 
+    if (modeButton) {
+      modeButton.addEventListener("click", event => {
+        event.preventDefault();
+        toggleGameplayMode();
+      });
+    }
+
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
       const dir = key === "arrowleft" || key === "a" ? DIRS.left
@@ -1363,6 +1413,7 @@
     fruitMarks = new Set();
     fruit = null;
     resetActors();
+    renderGameplayMode();
     requestAnimationFrame(gameLoop);
   })();
   </script>

@@ -142,6 +142,63 @@ class GameplayTuningTests(unittest.TestCase):
             "Normal ghost speed should use mode-aware tunnel multiplier",
         )
 
+    def test_old_like_red_cruise_elroy_adds_staged_speed_only_to_normal_red(self):
+        assert_html_contains(self, r"OLD_LIKE_ELROY_STAGES\s*=\s*\[", "Old-like Cruise Elroy stage table")
+        for remaining_pellets, speed_multiplier in [(20, 1.06), (10, 1.12)]:
+            assert_html_contains(
+                self,
+                rf"pelletsRemaining:\s*{remaining_pellets},\s*speedMultiplier:\s*{speed_multiplier}",
+                f"Old-like Elroy stage at {remaining_pellets} pellets",
+            )
+
+        assert_html_contains(self, r"function oldLikeElroyStage\(ghost\)", "Elroy stage helper")
+        elroy_body = find_function_body("oldLikeElroyStage")
+        self.assertRegex(
+            elroy_body,
+            re.compile(r'activeGameplayMode\.id !== "old-like"[\s\S]*?return null'),
+            "Elroy should not affect Maze Muncher mode",
+        )
+        self.assertRegex(
+            elroy_body,
+            re.compile(r'ghost\.name !== "red"[\s\S]*?return null'),
+            "Elroy should only affect red ghost",
+        )
+        self.assertRegex(
+            elroy_body,
+            re.compile(r'ghost\.state !== "normal"[\s\S]*?return null'),
+            "Elroy should only affect normal chase-capable red",
+        )
+        self.assertRegex(
+            elroy_body,
+            re.compile(r"frightenedTimer > 0[\s\S]*?return null"),
+            "Elroy should not apply while red is frightened",
+        )
+
+        actor_body = find_function_body("actorSpeed")
+        self.assertRegex(
+            actor_body,
+            re.compile(r"oldLikeElroyStage\(actor\)[\s\S]*?speed \*= elroy\.speedMultiplier"),
+            "Red speed should gain staged Elroy pressure",
+        )
+
+    def test_old_like_red_cruise_elroy_targets_player_during_scatter(self):
+        target_body = find_function_body("targetForGhost")
+        self.assertRegex(
+            target_body,
+            re.compile(r"oldLikeElroyStage\(g\)[\s\S]*?return \{ x: p\.x, y: p\.y \}"),
+            "Elroy red should target the player instead of scatter corner",
+        )
+        self.assertRegex(
+            target_body,
+            re.compile(r"modeCycleFor\(activeGameplayMode,\s*level\)\[modeIndex\]\.mode"),
+            "Scatter targeting should use the active mode cycle",
+        )
+        self.assertRegex(
+            target_body,
+            re.compile(r'currentMode === "scatter"[\s\S]*?oldLikeElroyStage\(g\)[\s\S]*?return g\.scatter'),
+            "Non-Elroy ghosts and inactive Elroy red should keep scatter target",
+        )
+
     def test_old_like_ghost_release_uses_pellet_thresholds_with_timer_fallback(self):
         assert_html_contains(self, r"OLD_LIKE_GHOST_RELEASE\s*=\s*\{", "Old-like ghost release spec")
         for ghost_name, pellet_threshold, fallback_seconds in [

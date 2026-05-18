@@ -479,6 +479,11 @@
       orange: { pellets: 60, fallback: 13 }
     };
 
+    const OLD_LIKE_ELROY_STAGES = [
+      { pelletsRemaining: 20, speedMultiplier: 1.06 },
+      { pelletsRemaining: 10, speedMultiplier: 1.12 }
+    ];
+
     const GAMEPLAY_TUNING = {
       "maze-muncher": {
         playerSpeed: (level) => Math.min(112, 90 + level * 2.5),
@@ -799,6 +804,14 @@
       return r === TUNNEL_ROW && (c < 6 || c >= COLS - 6);
     }
 
+    function oldLikeElroyStage(ghost) {
+      if (activeGameplayMode.id !== "old-like") return null;
+      if (ghost.name !== "red") return null;
+      if (ghost.state !== "normal") return null;
+      if (frightenedTimer > 0) return null;
+      return OLD_LIKE_ELROY_STAGES.find(stage => pelletsRemaining <= stage.pelletsRemaining) || null;
+    }
+
     function actorSpeed(actor, actorType) {
       if (actorType === "player") return player.baseSpeed;
       const normal = ghostSpeedFor(activeGameplayMode, level);
@@ -806,6 +819,8 @@
       if (actor.state === "leaving") return normal * 0.96;
       let speed = normal;
       if (frightenedTimer > 0 && actor.state === "normal") speed = normal * 0.68;
+      const elroy = oldLikeElroyStage(actor);
+      if (elroy) speed *= elroy.speedMultiplier;
       if (actor.state === "normal" && isTunnelSide(actor)) {
         speed *= tunnelGhostSpeedMultiplierFor(activeGameplayMode, level);
       }
@@ -877,10 +892,15 @@
     function targetForGhost(g) {
       if (g.state === "leaving") return { x: 13.5, y: 11.5 };
       if (g.state === "eaten") return { x: 13.5, y: 14.5 };
-      if (MODE_CYCLE[modeIndex].mode === "scatter") return g.scatter;
 
       const pDir = player.dir || player.lastDir || DIRS.left;
       const p = playerTile();
+      const currentMode = modeCycleFor(activeGameplayMode, level)[modeIndex].mode;
+
+      if (currentMode === "scatter") {
+        if (oldLikeElroyStage(g)) return { x: p.x, y: p.y };
+        return g.scatter;
+      }
 
       if (g.name === "red") return { x: p.x, y: p.y };
 

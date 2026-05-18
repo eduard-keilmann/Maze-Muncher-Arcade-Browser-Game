@@ -1,6 +1,6 @@
 ## Parent PRD
 
-`issues/prd.md`
+`issues/prd_old-like_gameplay.md`
 
 ## What to build
 

@@ -78,6 +78,22 @@
       line-height: 1.45;
     }
 
+    .mode-controls {
+      display: flex;
+      justify-content: center;
+    }
+
+    .mode-button {
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid #3946d8;
+      border-radius: 8px;
+      background: #11113a;
+      color: #fff7a5;
+      font: 700 0.82rem/1 ui-monospace, Menlo, monospace;
+      letter-spacing: 0;
+    }
+
     kbd {
       color: #fff;
       background: #1b1b36;
@@ -291,6 +307,12 @@
 <body>
   <main class="shell" aria-label="Maze Muncher arcade game">
     <h1>MAZE MUNCHER</h1>
+    <section class="mode-controls" aria-label="Gameplay mode">
+      <button class="mode-button" type="button" data-action="mode" aria-label="Gameplay mode">
+        <span data-mode-label>MODE: MAZE MUNCHER</span>
+        <span hidden>MODE: OLD-LIKE</span>
+      </button>
+    </section>
     <div class="frame">
       <canvas id="game" width="560" height="712" aria-label="Maze chase arcade game canvas"></canvas>
     </div>

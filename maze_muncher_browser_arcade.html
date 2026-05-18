@@ -367,8 +367,8 @@
 
     const GAMEPLAY_MODE_STORAGE_KEY = "mazeMuncherGameplayMode";
     const GAMEPLAY_MODES = [
-      { id: "maze-muncher", label: "MODE: MAZE MUNCHER", highScoreKey: "mazeMuncherHighScore" },
-      { id: "old-like", label: "MODE: OLD-LIKE", highScoreKey: "mazeMuncherOldLikeHighScore" }
+      { id: "maze-muncher", label: "MODE: MAZE MUNCHER", footerLabel: "MAZE MUNCHER MODE", highScoreKey: "mazeMuncherHighScore" },
+      { id: "old-like", label: "MODE: OLD-LIKE", footerLabel: "OLD-LIKE MODE", highScoreKey: "mazeMuncherOldLikeHighScore" }
     ];
 
     const BASE_MAP = [
@@ -1172,7 +1172,7 @@
       ctx.textAlign = "right";
       ctx.font = "13px ui-monospace, Menlo, monospace";
       ctx.fillStyle = "#7878c8";
-      ctx.fillText("original maze-chase build", W - 12, HUD + ROWS * TILE + 21);
+      ctx.fillText(`${activeGameplayMode.footerLabel}`, W - 12, HUD + ROWS * TILE + 21);
     }
 
     function drawOverlay() {

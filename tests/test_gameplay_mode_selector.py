@@ -63,6 +63,13 @@ class GameplayModeSelectorTests(unittest.TestCase):
         assert_html_contains(self, r'localStorage\.getItem\(activeGameplayMode\.highScoreKey\)', "active mode high score read")
         assert_html_contains(self, r'localStorage\.setItem\(activeGameplayMode\.highScoreKey,\s*String\(highScore\)\)', "active mode high score write")
 
+    def test_footer_shows_active_gameplay_mode(self):
+        assert_html_contains(
+            self,
+            r'ctx\.fillText\(`\$\{activeGameplayMode\.footerLabel\}`,\s*W - 12,\s*HUD \+ ROWS \* TILE \+ 21\)',
+            "footer draws active gameplay mode",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

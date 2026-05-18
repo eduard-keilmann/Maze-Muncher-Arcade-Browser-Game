@@ -32,6 +32,7 @@ class GameplayTuningTests(unittest.TestCase):
             "ghostSpeedFor",
             "frightenedTimeFor",
             "fruitValueFor",
+            "tunnelGhostSpeedMultiplierFor",
             "ghostReleaseBaseFor",
             "modeCycleFor",
         ]:
@@ -42,6 +43,7 @@ class GameplayTuningTests(unittest.TestCase):
             "ghostSpeedFor",
             "frightenedTimeFor",
             "fruitValueFor",
+            "tunnelGhostSpeedMultiplierFor",
             "ghostReleaseBaseFor",
             "modeCycleFor",
         ]:
@@ -109,6 +111,35 @@ class GameplayTuningTests(unittest.TestCase):
             frightened_branch.group("body"),
             re.compile(r'frightenedMovementFor\(activeGameplayMode,\s*level\)\s*===\s*"random"'),
             "Old-like frightened branch should force random movement",
+        )
+
+    def test_old_like_tunnel_slowdown_applies_only_to_normal_ghosts(self):
+        assert_html_contains(
+            self,
+            r"tunnelGhostSpeedMultiplier:\s*\(\)\s*=>\s*1",
+            "Maze Muncher keeps current tunnel speed behavior",
+        )
+        assert_html_contains(
+            self,
+            r"tunnelGhostSpeedMultiplier:\s*\(level\)\s*=>\s*OLD_LIKE_LEVEL_BANDS\[levelBandFor\(level\)\]\.tunnelGhostSpeedMultiplier",
+            "Old-like tunnel slowdown uses level-band tuning",
+        )
+
+        actor_body = find_function_body("actorSpeed")
+        self.assertRegex(
+            actor_body,
+            re.compile(r'actorType === "player"[\s\S]*?return player\.baseSpeed'),
+            "Tunnel slowdown should not apply to the player",
+        )
+        self.assertRegex(
+            actor_body,
+            re.compile(r'actor\.state === "eaten"[\s\S]*?return Math\.min\(160,\s*normal \* 1\.85\)'),
+            "Tunnel slowdown should not interfere with eaten ghost return speed",
+        )
+        self.assertRegex(
+            actor_body,
+            re.compile(r"tunnelGhostSpeedMultiplierFor\(activeGameplayMode,\s*level\)"),
+            "Normal ghost speed should use mode-aware tunnel multiplier",
         )
 
     def test_old_like_awards_one_extra_life_when_score_first_crosses_10000(self):

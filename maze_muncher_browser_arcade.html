@@ -482,6 +482,7 @@
         fruitValue: (level, mark) => Math.min(5000, 100 + level * 100 + mark),
         ghostReleaseBase: (level) => Math.max(0, 2.5 - level * 0.15),
         frightenedMovement: "mixed",
+        tunnelGhostSpeedMultiplier: () => 1,
         modeCycle: () => MODE_CYCLE
       },
       "old-like": {
@@ -492,6 +493,7 @@
         fruitValue: (level) => oldLikeFruitFor(level).value,
         ghostReleaseBase: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostReleaseBase,
         frightenedMovement: "random",
+        tunnelGhostSpeedMultiplier: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].tunnelGhostSpeedMultiplier,
         modeCycle: () => MODE_CYCLE
       }
     };
@@ -540,6 +542,10 @@
 
     function ghostReleaseBaseFor(mode, level) {
       return getGameplayTuning(mode, level).ghostReleaseBase(level);
+    }
+
+    function tunnelGhostSpeedMultiplierFor(mode, level) {
+      return getGameplayTuning(mode, level).tunnelGhostSpeedMultiplier(level);
     }
 
     function frightenedMovementFor(mode, level) {
@@ -781,13 +787,22 @@
       return !isBlocked(c + dir.dx, r + dir.dy, actorType, actor);
     }
 
+    function isTunnelSide(actor) {
+      const { c, r } = tileAt(actor.x, actor.y);
+      return r === TUNNEL_ROW && (c < 6 || c >= COLS - 6);
+    }
+
     function actorSpeed(actor, actorType) {
       if (actorType === "player") return player.baseSpeed;
       const normal = ghostSpeedFor(activeGameplayMode, level);
       if (actor.state === "eaten") return Math.min(160, normal * 1.85);
       if (actor.state === "leaving") return normal * 0.96;
-      if (frightenedTimer > 0 && actor.state === "normal") return normal * 0.68;
-      return normal;
+      let speed = normal;
+      if (frightenedTimer > 0 && actor.state === "normal") speed = normal * 0.68;
+      if (actor.state === "normal" && isTunnelSide(actor)) {
+        speed *= tunnelGhostSpeedMultiplierFor(activeGameplayMode, level);
+      }
+      return speed;
     }
 
     function handleDecisionPoint(actor, actorType) {

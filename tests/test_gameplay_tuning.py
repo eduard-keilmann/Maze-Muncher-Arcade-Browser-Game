@@ -90,6 +90,36 @@ class GameplayTuningTests(unittest.TestCase):
             "Old-like frightened branch should force random movement",
         )
 
+    def test_power_pellets_score_and_reverse_even_when_frightened_time_is_zero(self):
+        eat_body = find_function_body("eatAtPlayerTile")
+        power_branch = re.search(r'if\s*\(cell === "o"\)\s*\{(?P<body>[\s\S]*?)\n        \}', eat_body)
+        self.assertIsNotNone(power_branch, "Missing power-pellet branch")
+
+        self.assertRegex(eat_body, re.compile(r'score \+= cell === "\."\s*\?\s*10\s*:\s*50'), "Power pellet should always award 50 points")
+        self.assertRegex(
+            power_branch.group("body"),
+            re.compile(r'frightenedTimer\s*=\s*frightenedTimeFor\(activeGameplayMode,\s*level\)'),
+            "Power pellet should use mode-aware frightened time, including zero",
+        )
+        self.assertRegex(power_branch.group("body"), re.compile(r"reverseNormalGhosts\(\)"), "Power pellet should always reverse normal ghosts")
+
+    def test_ghosts_are_edible_and_combo_scored_only_while_frightened_timer_is_active(self):
+        collision_body = find_function_body("checkCollisions")
+        edible_branch = re.search(
+            r'if\s*\(g\.state === "normal" && frightenedTimer > 0\)\s*\{(?P<body>[\s\S]*?)\n        \}',
+            collision_body,
+        )
+        self.assertIsNotNone(edible_branch, "Missing edible ghost collision branch")
+        self.assertRegex(edible_branch.group("body"), re.compile(r"score \+= ghostEatValue"), "Ghost combo score should be inside edible state")
+        self.assertRegex(edible_branch.group("body"), re.compile(r"ghostEatValue = Math\.min\(1600,\s*ghostEatValue \* 2\)"), "Ghost combo should advance only inside edible state")
+
+        normal_hit = re.search(
+            r'if\s*\(g\.state === "normal"\)\s*\{(?P<body>[\s\S]*?)\n        \}',
+            collision_body,
+        )
+        self.assertIsNotNone(normal_hit, "Missing normal ghost collision branch")
+        self.assertRegex(normal_hit.group("body"), re.compile(r"loseLife\(\)"), "Zero frightened time should leave normal ghosts dangerous")
+
 
 if __name__ == "__main__":
     unittest.main()

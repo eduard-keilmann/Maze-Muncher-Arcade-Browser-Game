@@ -473,6 +473,12 @@
       { maxLevel: Infinity, name: "key", value: 5000 }
     ];
 
+    const OLD_LIKE_GHOST_RELEASE = {
+      pink: { pellets: 0, fallback: 1 },
+      cyan: { pellets: 30, fallback: 7 },
+      orange: { pellets: 60, fallback: 13 }
+    };
+
     const GAMEPLAY_TUNING = {
       "maze-muncher": {
         playerSpeed: (level) => Math.min(112, 90 + level * 2.5),
@@ -627,6 +633,7 @@
         color,
         scatter,
         releaseLeft: release,
+        releaseTimer: 0,
         state: name === "red" ? "normal" : "home",
         homeDrift: name === "cyan" ? 1 : -1,
         decisionCooldown: 0
@@ -942,6 +949,28 @@
       }
     }
 
+    function startGhostLeaving(g) {
+      g.state = "leaving";
+      g.x = Math.round(g.x / TILE) * TILE + TILE / 2;
+      g.y = Math.round(g.y / TILE) * TILE + TILE / 2;
+      g.dir = DIRS.up;
+    }
+
+    function updateGhostRelease(g, dt) {
+      if (activeGameplayMode.id !== "old-like") {
+        g.releaseLeft -= dt;
+        if (g.releaseLeft <= 0) startGhostLeaving(g);
+        return;
+      }
+
+      const release = OLD_LIKE_GHOST_RELEASE[g.name];
+      if (!release) return;
+      g.releaseTimer += dt;
+      if (pelletsEaten >= release.pellets || g.releaseTimer >= release.fallback) {
+        startGhostLeaving(g);
+      }
+    }
+
     function updateMode(dt) {
       if (frightenedTimer > 0) {
         frightenedTimer -= dt;
@@ -962,15 +991,9 @@
     function updateGhosts(dt) {
       for (const g of ghosts) {
         if (g.state === "home") {
-          g.releaseLeft -= dt;
           g.y += g.homeDrift * actorSpeed(g, "ghost") * 0.32 * dt;
           if (g.y < 13.5 * TILE || g.y > 15.5 * TILE) g.homeDrift *= -1;
-          if (g.releaseLeft <= 0) {
-            g.state = "leaving";
-            g.x = Math.round(g.x / TILE) * TILE + TILE / 2;
-            g.y = Math.round(g.y / TILE) * TILE + TILE / 2;
-            g.dir = DIRS.up;
-          }
+          updateGhostRelease(g, dt);
           continue;
         }
 

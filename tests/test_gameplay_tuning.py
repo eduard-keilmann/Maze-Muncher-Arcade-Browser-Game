@@ -142,6 +142,56 @@ class GameplayTuningTests(unittest.TestCase):
             "Normal ghost speed should use mode-aware tunnel multiplier",
         )
 
+    def test_old_like_ghost_release_uses_pellet_thresholds_with_timer_fallback(self):
+        assert_html_contains(self, r"OLD_LIKE_GHOST_RELEASE\s*=\s*\{", "Old-like ghost release spec")
+        for ghost_name, pellet_threshold, fallback_seconds in [
+            ("pink", 0, 1),
+            ("cyan", 30, 7),
+            ("orange", 60, 13),
+        ]:
+            assert_html_contains(
+                self,
+                rf'{ghost_name}:\s*\{{\s*pellets:\s*{pellet_threshold},\s*fallback:\s*{fallback_seconds}',
+                f"Old-like {ghost_name} pellet threshold and timer fallback",
+            )
+
+        update_body = find_function_body("updateGhostRelease")
+        self.assertRegex(
+            update_body,
+            re.compile(r'activeGameplayMode\.id !== "old-like"[\s\S]*?releaseLeft -= dt'),
+            "Maze Muncher should keep timer-based release behavior",
+        )
+        self.assertRegex(
+            update_body,
+            re.compile(r"pelletsEaten >= release\.pellets[\s\S]*?releaseTimer >= release\.fallback"),
+            "Old-like home ghosts should leave by pellet progress or fallback timing",
+        )
+
+    def test_old_like_ghost_release_thresholds_survive_player_death(self):
+        make_ghost_body = find_function_body("makeGhost")
+        self.assertRegex(
+            make_ghost_body,
+            re.compile(r'name === "red" \? "normal" : "home"'),
+            "Red should start outside while other ghosts start in the house",
+        )
+
+        start_level_body = find_function_body("startLevel")
+        self.assertRegex(
+            start_level_body,
+            re.compile(r"pelletsEaten = 0"),
+            "New boards should reset pellet progress",
+        )
+
+        update_body = find_function_body("update")
+        death_branch = re.search(r'if\s*\(state === "death"\)\s*\{(?P<body>[\s\S]*?)\n      \}', update_body)
+        self.assertIsNotNone(death_branch, "Missing death-state reset branch")
+        self.assertRegex(death_branch.group("body"), re.compile(r"resetActors\(\)"), "Death should reset actors")
+        self.assertNotRegex(
+            death_branch.group("body"),
+            re.compile(r"pelletsEaten = 0|startLevel\(\)"),
+            "Death reset should preserve current board pellet progress for Old-like release thresholds",
+        )
+
     def test_old_like_awards_one_extra_life_when_score_first_crosses_10000(self):
         assert_html_contains(self, r"let extraLifeAwarded\s*=\s*false", "extra-life award state")
         assert_html_contains(self, r"function awardScore\(points\)", "shared score award path")

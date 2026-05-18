@@ -71,8 +71,29 @@ class GameplayTuningTests(unittest.TestCase):
             assert_html_contains(self, rf'"{band}":\s*\{{', f"{band} tuning values")
 
         assert_html_contains(self, r"frightenedTime:\s*0", "late Old-like frightened time can reach zero")
-        assert_html_contains(self, r"fruitValue:\s*5000", "Old-like high-value fruit tuning exists")
+        assert_html_contains(self, r'value:\s*5000', "Old-like high-value fruit tuning exists")
         assert_html_contains(self, r"tunnelGhostSpeedMultiplier:\s*0\.[0-9]+", "Old-like tunnel slowdown tuning exists")
+
+    def test_old_like_fruit_names_and_values_follow_original_like_sequence(self):
+        assert_html_contains(self, r"OLD_LIKE_FRUIT_SEQUENCE\s*=\s*\[", "Old-like fruit sequence")
+        for fruit_name, fruit_value in [
+            ("cherry", 100),
+            ("strawberry", 300),
+            ("orange", 500),
+            ("apple", 700),
+            ("melon", 1000),
+            ("galaxian", 2000),
+            ("bell", 3000),
+            ("key", 5000),
+        ]:
+            assert_html_contains(
+                self,
+                rf'name:\s*"{fruit_name}",\s*value:\s*{fruit_value}',
+                f"Old-like {fruit_name} fruit value",
+            )
+
+        assert_html_contains(self, r"fruitValueFor\(activeGameplayMode,\s*level,\s*mark\)", "spawned fruit uses active mode value")
+        assert_html_contains(self, r"fruitNameFor\(activeGameplayMode,\s*level,\s*mark\)", "spawned fruit uses active mode name")
 
     def test_old_like_frightened_movement_is_random_without_target_fallback(self):
         assert_html_contains(self, r"frightenedMovement:\s*\"random\"", "Old-like frightened random movement tuning")
@@ -90,12 +111,32 @@ class GameplayTuningTests(unittest.TestCase):
             "Old-like frightened branch should force random movement",
         )
 
+    def test_old_like_awards_one_extra_life_when_score_first_crosses_10000(self):
+        assert_html_contains(self, r"let extraLifeAwarded\s*=\s*false", "extra-life award state")
+        assert_html_contains(self, r"function awardScore\(points\)", "shared score award path")
+
+        award_body = find_function_body("awardScore")
+        self.assertRegex(award_body, re.compile(r"const previousScore = score"), "Extra-life check should compare previous score")
+        self.assertRegex(award_body, re.compile(r"score \+= points"), "Shared score path should add points")
+        self.assertRegex(award_body, re.compile(r'setHighScore\(\)'), "Shared score path should update high score")
+        self.assertRegex(
+            award_body,
+            re.compile(r'activeGameplayMode\.id === "old-like"[\s\S]*?previousScore < 10000[\s\S]*?score >= 10000'),
+            "Old-like extra life should trigger only when crossing 10000",
+        )
+        self.assertRegex(award_body, re.compile(r"!extraLifeAwarded"), "Extra life should be one-time")
+        self.assertRegex(award_body, re.compile(r"lives\+\+"), "Crossing 10000 should add one life")
+        self.assertRegex(award_body, re.compile(r"extraLifeAwarded = true"), "Extra-life award should latch")
+
+        new_game_body = find_function_body("newGame")
+        self.assertRegex(new_game_body, re.compile(r"extraLifeAwarded = false"), "New game should reset extra-life award")
+
     def test_power_pellets_score_and_reverse_even_when_frightened_time_is_zero(self):
         eat_body = find_function_body("eatAtPlayerTile")
         power_branch = re.search(r'if\s*\(cell === "o"\)\s*\{(?P<body>[\s\S]*?)\n        \}', eat_body)
         self.assertIsNotNone(power_branch, "Missing power-pellet branch")
 
-        self.assertRegex(eat_body, re.compile(r'score \+= cell === "\."\s*\?\s*10\s*:\s*50'), "Power pellet should always award 50 points")
+        self.assertRegex(eat_body, re.compile(r'awardScore\(cell === "\."\s*\?\s*10\s*:\s*50\)'), "Power pellet should always award 50 points")
         self.assertRegex(
             power_branch.group("body"),
             re.compile(r'frightenedTimer\s*=\s*frightenedTimeFor\(activeGameplayMode,\s*level\)'),
@@ -110,7 +151,7 @@ class GameplayTuningTests(unittest.TestCase):
             collision_body,
         )
         self.assertIsNotNone(edible_branch, "Missing edible ghost collision branch")
-        self.assertRegex(edible_branch.group("body"), re.compile(r"score \+= ghostEatValue"), "Ghost combo score should be inside edible state")
+        self.assertRegex(edible_branch.group("body"), re.compile(r"awardScore\(ghostEatValue\)"), "Ghost combo score should be inside edible state")
         self.assertRegex(edible_branch.group("body"), re.compile(r"ghostEatValue = Math\.min\(1600,\s*ghostEatValue \* 2\)"), "Ghost combo should advance only inside edible state")
 
         normal_hit = re.search(

@@ -429,8 +429,6 @@
         playerSpeed: 88,
         ghostSpeed: 82,
         frightenedTime: 6,
-        fruitName: "cherry",
-        fruitValue: 100,
         ghostReleaseBase: 2.1,
         tunnelGhostSpeedMultiplier: 0.52
       },
@@ -438,8 +436,6 @@
         playerSpeed: 94,
         ghostSpeed: 88,
         frightenedTime: 5,
-        fruitName: "strawberry",
-        fruitValue: 300,
         ghostReleaseBase: 1.8,
         tunnelGhostSpeedMultiplier: 0.55
       },
@@ -447,8 +443,6 @@
         playerSpeed: 99,
         ghostSpeed: 96,
         frightenedTime: 2.5,
-        fruitName: "orange",
-        fruitValue: 700,
         ghostReleaseBase: 1.2,
         tunnelGhostSpeedMultiplier: 0.58
       },
@@ -456,8 +450,6 @@
         playerSpeed: 103,
         ghostSpeed: 103,
         frightenedTime: 1,
-        fruitName: "bell",
-        fruitValue: 3000,
         ghostReleaseBase: 0.7,
         tunnelGhostSpeedMultiplier: 0.62
       },
@@ -465,18 +457,28 @@
         playerSpeed: 106,
         ghostSpeed: 108,
         frightenedTime: 0,
-        fruitName: "key",
-        fruitValue: 5000,
         ghostReleaseBase: 0.3,
         tunnelGhostSpeedMultiplier: 0.65
       }
     };
+
+    const OLD_LIKE_FRUIT_SEQUENCE = [
+      { maxLevel: 1, name: "cherry", value: 100 },
+      { maxLevel: 2, name: "strawberry", value: 300 },
+      { maxLevel: 4, name: "orange", value: 500 },
+      { maxLevel: 6, name: "apple", value: 700 },
+      { maxLevel: 8, name: "melon", value: 1000 },
+      { maxLevel: 10, name: "galaxian", value: 2000 },
+      { maxLevel: 12, name: "bell", value: 3000 },
+      { maxLevel: Infinity, name: "key", value: 5000 }
+    ];
 
     const GAMEPLAY_TUNING = {
       "maze-muncher": {
         playerSpeed: (level) => Math.min(112, 90 + level * 2.5),
         ghostSpeed: (level) => Math.min(108, 78 + level * 2.6),
         frightenedTime: (level) => Math.max(4.2, 7.5 - level * 0.25),
+        fruitName: () => "cherry",
         fruitValue: (level, mark) => Math.min(5000, 100 + level * 100 + mark),
         ghostReleaseBase: (level) => Math.max(0, 2.5 - level * 0.15),
         frightenedMovement: "mixed",
@@ -486,7 +488,8 @@
         playerSpeed: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].playerSpeed,
         ghostSpeed: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostSpeed,
         frightenedTime: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime,
-        fruitValue: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].fruitValue,
+        fruitName: (level) => oldLikeFruitFor(level).name,
+        fruitValue: (level) => oldLikeFruitFor(level).value,
         ghostReleaseBase: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostReleaseBase,
         frightenedMovement: "random",
         modeCycle: () => MODE_CYCLE
@@ -507,6 +510,10 @@
       return "levels-17-plus";
     }
 
+    function oldLikeFruitFor(level) {
+      return OLD_LIKE_FRUIT_SEQUENCE.find(fruit => level <= fruit.maxLevel) || OLD_LIKE_FRUIT_SEQUENCE[OLD_LIKE_FRUIT_SEQUENCE.length - 1];
+    }
+
     function getGameplayTuning(mode, level) {
       return GAMEPLAY_TUNING[mode.id] || GAMEPLAY_TUNING["maze-muncher"];
     }
@@ -525,6 +532,10 @@
 
     function fruitValueFor(mode, level, mark) {
       return getGameplayTuning(mode, level).fruitValue(level, mark);
+    }
+
+    function fruitNameFor(mode, level, mark) {
+      return getGameplayTuning(mode, level).fruitName(level, mark);
     }
 
     function ghostReleaseBaseFor(mode, level) {
@@ -557,6 +568,7 @@
     let highScore = readHighScore();
     let level = 1;
     let lives = 3;
+    let extraLifeAwarded = false;
     let state = "title";
     let paused = false;
     let readyTimer = 0;
@@ -651,6 +663,7 @@
       score = 0;
       level = 1;
       lives = 3;
+      extraLifeAwarded = false;
       startLevel();
     }
 
@@ -658,6 +671,22 @@
       if (score > highScore) {
         highScore = score;
         try { localStorage.setItem(activeGameplayMode.highScoreKey, String(highScore)); } catch (_) {}
+      }
+    }
+
+    function awardScore(points) {
+      const previousScore = score;
+      score += points;
+      setHighScore();
+      if (
+        activeGameplayMode.id === "old-like" &&
+        !extraLifeAwarded &&
+        previousScore < 10000 &&
+        score >= 10000
+      ) {
+        lives++;
+        extraLifeAwarded = true;
+        messages.push({ text: "EXTRA LIFE", x: W / 2, y: HUD + 18.5 * TILE, time: 1.1, life: 1.1, size: 18 });
       }
     }
 
@@ -959,8 +988,7 @@
         grid[r][c] = " ";
         pelletsRemaining--;
         pelletsEaten++;
-        score += cell === "." ? 10 : 50;
-        setHighScore();
+        awardScore(cell === "." ? 10 : 50);
 
         if (cell === "o") {
           frightenedTimer = frightenedTimeFor(activeGameplayMode, level);
@@ -987,6 +1015,7 @@
             x: 13.5 * TILE,
             y: 23.5 * TILE,
             time: 10,
+            name: fruitNameFor(activeGameplayMode, level, mark),
             value: fruitValueFor(activeGameplayMode, level, mark)
           };
           return;
@@ -998,8 +1027,7 @@
       if (!fruit) return;
       fruit.time -= dt;
       if (Math.hypot(player.x - fruit.x, player.y - fruit.y) < 12) {
-        score += fruit.value;
-        setHighScore();
+        awardScore(fruit.value);
         messages.push({ text: String(fruit.value), x: fruit.x, y: HUD + fruit.y - 8, time: 0.8, life: 0.8, size: 16 });
         fruit = null;
       } else if (fruit.time <= 0) {
@@ -1013,8 +1041,7 @@
         if (distance > 13) continue;
 
         if (g.state === "normal" && frightenedTimer > 0) {
-          score += ghostEatValue;
-          setHighScore();
+          awardScore(ghostEatValue);
           messages.push({ text: String(ghostEatValue), x: g.x, y: HUD + g.y - 10, time: 0.9, life: 0.9, size: 16 });
           ghostEatValue = Math.min(1600, ghostEatValue * 2);
           g.state = "eaten";

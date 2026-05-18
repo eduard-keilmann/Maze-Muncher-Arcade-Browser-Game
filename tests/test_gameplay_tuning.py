@@ -16,6 +16,13 @@ def assert_html_contains(test_case, pattern, description):
     )
 
 
+def find_function_body(name):
+    match = re.search(rf"function {name}\([^)]*\) \{{(?P<body>[\s\S]*?)\n    \}}", HTML)
+    if not match:
+        raise AssertionError(f"Missing function {name}")
+    return match.group("body")
+
+
 class GameplayTuningTests(unittest.TestCase):
     def test_mode_aware_tuning_entry_points_exist(self):
         for name in [
@@ -66,6 +73,22 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"frightenedTime:\s*0", "late Old-like frightened time can reach zero")
         assert_html_contains(self, r"fruitValue:\s*5000", "Old-like high-value fruit tuning exists")
         assert_html_contains(self, r"tunnelGhostSpeedMultiplier:\s*0\.[0-9]+", "Old-like tunnel slowdown tuning exists")
+
+    def test_old_like_frightened_movement_is_random_without_target_fallback(self):
+        assert_html_contains(self, r"frightenedMovement:\s*\"random\"", "Old-like frightened random movement tuning")
+        assert_html_contains(self, r"frightenedMovementFor\(activeGameplayMode,\s*level\)", "active mode selects frightened movement")
+
+        choose_body = find_function_body("chooseGhostDirection")
+        frightened_branch = re.search(
+            r'if\s*\(frightenedTimer > 0 && g\.state === "normal"\)\s*\{(?P<body>[\s\S]*?)\n      \}',
+            choose_body,
+        )
+        self.assertIsNotNone(frightened_branch, "Missing frightened ghost direction branch")
+        self.assertRegex(
+            frightened_branch.group("body"),
+            re.compile(r'frightenedMovementFor\(activeGameplayMode,\s*level\)\s*===\s*"random"'),
+            "Old-like frightened branch should force random movement",
+        )
 
 
 if __name__ == "__main__":

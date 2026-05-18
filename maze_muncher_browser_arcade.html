@@ -479,6 +479,7 @@
         frightenedTime: (level) => Math.max(4.2, 7.5 - level * 0.25),
         fruitValue: (level, mark) => Math.min(5000, 100 + level * 100 + mark),
         ghostReleaseBase: (level) => Math.max(0, 2.5 - level * 0.15),
+        frightenedMovement: "mixed",
         modeCycle: () => MODE_CYCLE
       },
       "old-like": {
@@ -487,6 +488,7 @@
         frightenedTime: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime,
         fruitValue: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].fruitValue,
         ghostReleaseBase: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostReleaseBase,
+        frightenedMovement: "random",
         modeCycle: () => MODE_CYCLE
       }
     };
@@ -527,6 +529,10 @@
 
     function ghostReleaseBaseFor(mode, level) {
       return getGameplayTuning(mode, level).ghostReleaseBase(level);
+    }
+
+    function frightenedMovementFor(mode, level) {
+      return getGameplayTuning(mode, level).frightenedMovement;
     }
 
     function modeCycleFor(mode, level) {
@@ -862,6 +868,9 @@
       if (!choices.length) return opposite(g.dir) || DIRS.left;
 
       if (frightenedTimer > 0 && g.state === "normal") {
+        if (frightenedMovementFor(activeGameplayMode, level) === "random") {
+          return choices[Math.floor(Math.random() * choices.length)];
+        }
         if (Math.random() < 0.72 || choices.length === 1) {
           return choices[Math.floor(Math.random() * choices.length)];
         }

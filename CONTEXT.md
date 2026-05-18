@@ -16,11 +16,16 @@ _Avoid_: original-like dynamics
 Level-scaling rules that use a small number of original-like level ranges instead of exact tables or smooth per-level growth.
 _Avoid_: exact level table, smooth linear scaling
 
+**Level band**:
+A named range of levels that shares the same original-like gameplay tuning.
+_Avoid_: exact round table row
+
 ## Relationships
 
 - **Original-like dynamics** may use original Pac-Man tables and mechanics while keeping Maze Muncher identity.
 - **Arcade-accurate clone** requires stricter precision than **Original-like dynamics**.
 - **Step-band formulas** are one implementation style for **Original-like dynamics**.
+- **Level bands** for **Step-band formulas** are `1`, `2-4`, `5-8`, `9-16`, and `17+`.
 
 ## Example Dialogue
 

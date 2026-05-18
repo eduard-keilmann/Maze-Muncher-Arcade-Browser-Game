@@ -424,11 +424,115 @@
       { mode: "chase", duration: Infinity }
     ];
 
+    const OLD_LIKE_LEVEL_BANDS = {
+      "level-1": {
+        playerSpeed: 88,
+        ghostSpeed: 82,
+        frightenedTime: 6,
+        fruitName: "cherry",
+        fruitValue: 100,
+        ghostReleaseBase: 2.1,
+        tunnelGhostSpeedMultiplier: 0.52
+      },
+      "levels-2-4": {
+        playerSpeed: 94,
+        ghostSpeed: 88,
+        frightenedTime: 5,
+        fruitName: "strawberry",
+        fruitValue: 300,
+        ghostReleaseBase: 1.8,
+        tunnelGhostSpeedMultiplier: 0.55
+      },
+      "levels-5-8": {
+        playerSpeed: 99,
+        ghostSpeed: 96,
+        frightenedTime: 2.5,
+        fruitName: "orange",
+        fruitValue: 700,
+        ghostReleaseBase: 1.2,
+        tunnelGhostSpeedMultiplier: 0.58
+      },
+      "levels-9-16": {
+        playerSpeed: 103,
+        ghostSpeed: 103,
+        frightenedTime: 1,
+        fruitName: "bell",
+        fruitValue: 3000,
+        ghostReleaseBase: 0.7,
+        tunnelGhostSpeedMultiplier: 0.62
+      },
+      "levels-17-plus": {
+        playerSpeed: 106,
+        ghostSpeed: 108,
+        frightenedTime: 0,
+        fruitName: "key",
+        fruitValue: 5000,
+        ghostReleaseBase: 0.3,
+        tunnelGhostSpeedMultiplier: 0.65
+      }
+    };
+
+    const GAMEPLAY_TUNING = {
+      "maze-muncher": {
+        playerSpeed: (level) => Math.min(112, 90 + level * 2.5),
+        ghostSpeed: (level) => Math.min(108, 78 + level * 2.6),
+        frightenedTime: (level) => Math.max(4.2, 7.5 - level * 0.25),
+        fruitValue: (level, mark) => Math.min(5000, 100 + level * 100 + mark),
+        ghostReleaseBase: (level) => Math.max(0, 2.5 - level * 0.15),
+        modeCycle: () => MODE_CYCLE
+      },
+      "old-like": {
+        playerSpeed: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].playerSpeed,
+        ghostSpeed: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostSpeed,
+        frightenedTime: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime,
+        fruitValue: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].fruitValue,
+        ghostReleaseBase: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostReleaseBase,
+        modeCycle: () => MODE_CYCLE
+      }
+    };
+
     let grid;
     let pelletsRemaining = 0;
     let pelletsEaten = 0;
     let fruitMarks;
     let fruit = null;
+
+    function levelBandFor(level) {
+      if (level <= 1) return "level-1";
+      if (level <= 4) return "levels-2-4";
+      if (level <= 8) return "levels-5-8";
+      if (level <= 16) return "levels-9-16";
+      return "levels-17-plus";
+    }
+
+    function getGameplayTuning(mode, level) {
+      return GAMEPLAY_TUNING[mode.id] || GAMEPLAY_TUNING["maze-muncher"];
+    }
+
+    function playerSpeedFor(mode, level) {
+      return getGameplayTuning(mode, level).playerSpeed(level);
+    }
+
+    function ghostSpeedFor(mode, level) {
+      return getGameplayTuning(mode, level).ghostSpeed(level);
+    }
+
+    function frightenedTimeFor(mode, level) {
+      return getGameplayTuning(mode, level).frightenedTime(level);
+    }
+
+    function fruitValueFor(mode, level, mark) {
+      return getGameplayTuning(mode, level).fruitValue(level, mark);
+    }
+
+    function ghostReleaseBaseFor(mode, level) {
+      return getGameplayTuning(mode, level).ghostReleaseBase(level);
+    }
+
+    function modeCycleFor(mode, level) {
+      return getGameplayTuning(mode, level).modeCycle(level);
+    }
+
     function findGameplayMode(modeId) {
       return GAMEPLAY_MODES.find(mode => mode.id === modeId) || GAMEPLAY_MODES[0];
     }
@@ -484,7 +588,7 @@
         nextDir: DIRS.left,
         lastDir: DIRS.left,
         radius: 8.5,
-        baseSpeed: Math.min(112, 90 + level * 2.5)
+        baseSpeed: playerSpeedFor(activeGameplayMode, level)
       };
     }
 
@@ -506,7 +610,7 @@
     }
 
     function makeGhosts() {
-      const baseRelease = Math.max(0, 2.5 - level * 0.15);
+      const baseRelease = ghostReleaseBaseFor(activeGameplayMode, level);
       return [
         makeGhost("red",    13.5, 11.5, "#ff3b3b", { x: 26, y: -1 }, 0),
         makeGhost("pink",   13.5, 14.5, "#ff8fde", { x: 1,  y: -1 }, baseRelease + 1.6),
@@ -644,7 +748,7 @@
 
     function actorSpeed(actor, actorType) {
       if (actorType === "player") return player.baseSpeed;
-      const normal = Math.min(108, 78 + level * 2.6);
+      const normal = ghostSpeedFor(activeGameplayMode, level);
       if (actor.state === "eaten") return Math.min(160, normal * 1.85);
       if (actor.state === "leaving") return normal * 0.96;
       if (frightenedTimer > 0 && actor.state === "normal") return normal * 0.68;
@@ -793,8 +897,9 @@
       }
 
       modeTimer += dt;
-      const current = MODE_CYCLE[modeIndex];
-      if (modeTimer >= current.duration && modeIndex < MODE_CYCLE.length - 1) {
+      const modeCycle = modeCycleFor(activeGameplayMode, level);
+      const current = modeCycle[modeIndex];
+      if (modeTimer >= current.duration && modeIndex < modeCycle.length - 1) {
         modeIndex++;
         modeTimer = 0;
         reverseNormalGhosts();
@@ -849,7 +954,7 @@
         setHighScore();
 
         if (cell === "o") {
-          frightenedTimer = Math.max(4.2, 7.5 - level * 0.25);
+          frightenedTimer = frightenedTimeFor(activeGameplayMode, level);
           ghostEatValue = 200;
           reverseNormalGhosts();
         }
@@ -873,7 +978,7 @@
             x: 13.5 * TILE,
             y: 23.5 * TILE,
             time: 10,
-            value: Math.min(5000, 100 + level * 100 + mark)
+            value: fruitValueFor(activeGameplayMode, level, mark)
           };
           return;
         }
@@ -994,8 +1099,9 @@
       ctx.fillText(`LEVEL ${level}`, 12, 38);
 
       ctx.textAlign = "center";
-      ctx.fillStyle = MODE_CYCLE[modeIndex].mode === "chase" ? "#ffb5b5" : "#b7dcff";
-      const modeLabel = frightenedTimer > 0 ? "POWER" : MODE_CYCLE[modeIndex].mode.toUpperCase();
+      const modeCycle = modeCycleFor(activeGameplayMode, level);
+      ctx.fillStyle = modeCycle[modeIndex].mode === "chase" ? "#ffb5b5" : "#b7dcff";
+      const modeLabel = frightenedTimer > 0 ? "POWER" : modeCycle[modeIndex].mode.toUpperCase();
       ctx.fillText(modeLabel, W / 2, 27);
 
       ctx.textAlign = "right";

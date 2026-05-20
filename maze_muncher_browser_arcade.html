@@ -88,11 +88,6 @@
       line-height: 1.45;
     }
 
-    .touch-help {
-      display: none;
-      max-width: min(100%, 360px);
-    }
-
     .mode-controls {
       display: flex;
       justify-content: center;
@@ -231,14 +226,6 @@
         display: grid;
       }
 
-      .touch-help {
-        display: block;
-      }
-
-      .desktop-help {
-        display: none;
-      }
-
       .help {
         font-size: 0.78rem;
       }
@@ -359,9 +346,6 @@
         <button class="touch-button dpad-down" type="button" data-direction="down" aria-label="Move down" aria-pressed="false">&#9660;</button>
         <span class="dpad-spacer" aria-hidden="true"></span>
       </div>
-      <p class="help touch-help">
-        Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart.
-      </p>
       <div class="touch-actions">
         <button class="touch-button touch-action-button" type="button" data-action="pause" aria-label="Pause game">
           <span aria-hidden="true">II</span>
@@ -373,7 +357,7 @@
         </button>
       </div>
     </section>
-    <p class="help desktop-help">
+    <p class="help">
       Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart.
     </p>
   </main>

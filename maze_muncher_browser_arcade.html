@@ -13,11 +13,11 @@
       --muted: #a7a6c7;
       --accent: #ffe85a;
       --mobile-gap: 10px;
-      --touch-size: 64px;
-      --touch-gap: 8px;
-      --touch-action-height: 50px;
-      --touch-action-width: 124px;
-      --touch-font-size: 1.62rem;
+      --touch-size: 72px;
+      --touch-gap: 10px;
+      --touch-action-height: 54px;
+      --touch-action-width: 132px;
+      --touch-font-size: 1.8rem;
     }
 
     * { box-sizing: border-box; }
@@ -78,6 +78,11 @@
       text-align: center;
       font-size: 0.88rem;
       line-height: 1.45;
+    }
+
+    .touch-help {
+      display: none;
+      max-width: min(100%, 360px);
     }
 
     .mode-controls {
@@ -213,6 +218,14 @@
         display: grid;
       }
 
+      .touch-help {
+        display: block;
+      }
+
+      .desktop-help {
+        display: none;
+      }
+
       .help {
         font-size: 0.78rem;
       }
@@ -221,11 +234,11 @@
     @media (pointer: coarse) and (max-height: 760px) and (orientation: portrait) {
       :root {
         --mobile-gap: 6px;
-        --touch-size: 58px;
-        --touch-gap: 6px;
-        --touch-action-height: 46px;
-        --touch-action-width: 120px;
-        --touch-font-size: 1.5rem;
+        --touch-size: 64px;
+        --touch-gap: 7px;
+        --touch-action-height: 50px;
+        --touch-action-width: 124px;
+        --touch-font-size: 1.62rem;
       }
 
       body {
@@ -238,7 +251,7 @@
       }
 
       .frame {
-        width: min(100%, calc(100svh - 320px));
+        width: min(100%, calc(100svh - 350px));
         min-width: 270px;
         padding: 6px;
       }
@@ -257,11 +270,11 @@
     @media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
       :root {
         --mobile-gap: 8px;
-        --touch-size: 56px;
-        --touch-gap: 6px;
-        --touch-action-height: 44px;
-        --touch-action-width: 110px;
-        --touch-font-size: 1.45rem;
+        --touch-size: 60px;
+        --touch-gap: 7px;
+        --touch-action-height: 48px;
+        --touch-action-width: 116px;
+        --touch-font-size: 1.55rem;
       }
 
       body {
@@ -271,7 +284,7 @@
 
       .shell {
         width: min(100%, 960px);
-        grid-template-columns: minmax(280px, calc(100svh - 24px)) minmax(214px, 250px);
+        grid-template-columns: minmax(280px, calc(100svh - 24px)) minmax(230px, 260px);
         grid-template-areas:
           "title title"
           "game controls";
@@ -333,6 +346,9 @@
         <button class="touch-button dpad-down" type="button" data-direction="down" aria-label="Move down" aria-pressed="false">&#9660;</button>
         <span class="dpad-spacer" aria-hidden="true"></span>
       </div>
+      <p class="help touch-help">
+        Move with the D-pad or swipe. Hold a direction to keep moving.
+      </p>
       <div class="touch-actions">
         <button class="touch-button touch-action-button" type="button" data-action="pause" aria-label="Pause game">
           <span aria-hidden="true">II</span>
@@ -344,7 +360,7 @@
         </button>
       </div>
     </section>
-    <p class="help">
+    <p class="help desktop-help">
       Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart.
     </p>
   </main>
@@ -1542,6 +1558,11 @@
       }
     }
 
+    function triggerTouchFeedback(pattern = 12) {
+      if (typeof navigator.vibrate !== "function") return;
+      navigator.vibrate(pattern);
+    }
+
     function cancelRestartPress(event) {
       if (!restartPressButton) return;
       if (event) event.preventDefault();
@@ -1560,6 +1581,7 @@
         restartPressTimer = null;
         restartPressButton.classList.remove("is-arming");
         restartPressButton = null;
+        triggerTouchFeedback([18, 40, 18]);
         newGame();
       }, restartLongPressMs);
     }
@@ -1579,6 +1601,7 @@
         const actionButton = event.target.closest("[data-action]");
         if (actionButton) {
           event.preventDefault();
+          triggerTouchFeedback();
           stopHoldingDirection();
           const actionName = actionButton.dataset.action;
           if (actionName === "restart") {
@@ -1593,6 +1616,7 @@
         if (!directionButton) return;
 
         event.preventDefault();
+        triggerTouchFeedback();
         stopHoldingDirection();
 
         const directionName = directionButton.dataset.direction;

@@ -63,11 +63,11 @@ class MobileControlsTests(unittest.TestCase):
             r'@media\s*\(pointer:\s*coarse\)\s*and\s*\(max-height:\s*760px\)\s*and\s*\(orientation:\s*portrait\)',
             "short portrait mobile media query",
         )
-        assert_html_contains(self, r'--touch-size:\s*58px', "short portrait keeps larger thumb-friendly D-pad buttons")
-        assert_html_contains(self, r'--touch-action-height:\s*46px', "short portrait keeps larger usable action buttons")
-        assert_html_contains(self, r'--touch-action-width:\s*120px', "short portrait keeps wider action buttons")
+        assert_html_contains(self, r'--touch-size:\s*64px', "short portrait keeps larger thumb-friendly D-pad buttons")
+        assert_html_contains(self, r'--touch-action-height:\s*50px', "short portrait keeps larger usable action buttons")
+        assert_html_contains(self, r'--touch-action-width:\s*124px', "short portrait keeps wider action buttons")
         assert_html_contains(self, r'--mobile-gap:\s*6px', "short portrait compacts vertical spacing")
-        assert_html_contains(self, r'width:\s*min\(100%,\s*calc\(100svh\s*-\s*320px\)\)', "short portrait caps canvas height pressure")
+        assert_html_contains(self, r'width:\s*min\(100%,\s*calc\(100svh\s*-\s*350px\)\)', "short portrait caps canvas height pressure")
         assert_html_contains(self, r'\.touch-controls\s*\{[^}]*order:\s*3;', "touch controls remain below canvas")
 
     def test_held_direction_button_exposes_persistent_active_state(self):
@@ -94,17 +94,44 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'\.frame\s*\{[^}]*grid-area:\s*game;', "frame assigned to game area")
         assert_html_contains(self, r'\.touch-controls\s*\{[^}]*grid-area:\s*controls;', "touch controls assigned beside canvas")
         assert_html_contains(self, r'\.help\s*\{[^}]*display:\s*none;', "landscape hides help to reduce scroll pressure")
-        assert_html_contains(self, r'--touch-size:\s*56px', "landscape keeps larger thumb-friendly controls")
-        assert_html_contains(self, r'--touch-action-height:\s*44px', "landscape keeps larger action controls")
-        assert_html_contains(self, r'--touch-action-width:\s*110px', "landscape keeps wider action controls")
-        assert_html_contains(self, r'minmax\(214px,\s*250px\)', "landscape reserves enough width for larger controls")
+        assert_html_contains(self, r'--touch-size:\s*60px', "landscape keeps larger thumb-friendly controls")
+        assert_html_contains(self, r'--touch-action-height:\s*48px', "landscape keeps larger action controls")
+        assert_html_contains(self, r'--touch-action-width:\s*116px', "landscape keeps wider action controls")
+        assert_html_contains(self, r'minmax\(230px,\s*260px\)', "landscape reserves enough width for larger controls")
 
     def test_mobile_controls_use_larger_default_touch_targets(self):
-        assert_html_contains(self, r'--touch-size:\s*64px', "default mobile D-pad buttons are larger")
-        assert_html_contains(self, r'--touch-action-height:\s*50px', "default mobile action buttons are taller")
-        assert_html_contains(self, r'--touch-action-width:\s*124px', "default mobile action buttons are wider")
-        assert_html_contains(self, r'--touch-font-size:\s*1\.62rem', "default mobile D-pad icons are larger")
+        assert_html_contains(self, r'--touch-size:\s*72px', "default mobile D-pad buttons are visibly larger")
+        assert_html_contains(self, r'--touch-action-height:\s*54px', "default mobile action buttons are taller")
+        assert_html_contains(self, r'--touch-action-width:\s*132px', "default mobile action buttons are wider")
+        assert_html_contains(self, r'--touch-font-size:\s*1\.8rem', "default mobile D-pad icons are larger")
         assert_html_contains(self, r'width:\s*min\(100%,\s*360px\)', "touch controls container fits larger controls")
+
+    def test_mobile_help_text_sits_below_dpad_before_action_buttons(self):
+        assert_html_contains(
+            self,
+            r'<div class="dpad"[\s\S]*?</div>\s*<p class="help touch-help">[\s\S]*?Hold a direction to keep moving\.[\s\S]*?</p>\s*<div class="touch-actions">',
+            "mobile help text appears directly below the D-pad",
+        )
+        assert_html_contains(self, r'class="help desktop-help"', "desktop keyboard help remains available")
+        assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*none;', "mobile help starts hidden on desktop")
+        assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*block;', "mobile help appears with touch controls")
+        assert_html_contains(self, r'\.desktop-help\s*\{[^}]*display:\s*none;', "desktop help hides on mobile")
+
+    def test_touch_buttons_trigger_haptic_feedback_on_normal_tap(self):
+        assert_html_contains(self, r'function triggerTouchFeedback\(pattern = 12\)', "haptic feedback helper exists")
+        assert_html_contains(self, r'typeof navigator\.vibrate !== "function"', "haptic helper safely checks browser support")
+        assert_html_contains(self, r'navigator\.vibrate\(pattern\)', "haptic helper uses browser vibration")
+        assert_html_contains(
+            self,
+            r'if \(actionButton\) \{[\s\S]*?event\.preventDefault\(\);[\s\S]*?triggerTouchFeedback\(\);',
+            "action buttons vibrate on normal tap",
+        )
+        assert_html_contains(
+            self,
+            r'const directionButton = event\.target\.closest\("\[data-direction\]"\);[\s\S]*?event\.preventDefault\(\);[\s\S]*?triggerTouchFeedback\(\);',
+            "direction buttons vibrate on normal tap",
+        )
+        assert_html_contains(self, r'triggerTouchFeedback\(\[18,\s*40,\s*18\]\);', "completed restart long press gets confirm feedback")
 
 
 if __name__ == "__main__":

@@ -17,6 +17,12 @@ def assert_html_contains(test_case, pattern, description):
 
 
 class MobileControlsTests(unittest.TestCase):
+    def test_page_background_does_not_repeat_under_tall_mobile_controls(self):
+        assert_html_contains(self, r'html\s*\{[^}]*background:\s*#000;', "page overflow background stays black")
+        assert_html_contains(self, r'body\s*\{[^}]*min-height:\s*100svh;', "body covers mobile viewport")
+        assert_html_contains(self, r'background-repeat:\s*no-repeat;', "radial page gradient does not repeat")
+        assert_html_contains(self, r'background-size:\s*100%\s*100svh;', "radial page gradient is limited to viewport height")
+
     def test_page_exposes_accessible_directional_pad(self):
         assert_html_contains(self, r'class="touch-controls"', "touch controls area")
         assert_html_contains(self, r'aria-label="Touch controls"', "accessible touch controls label")

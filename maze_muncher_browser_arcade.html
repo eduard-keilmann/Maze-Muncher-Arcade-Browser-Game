@@ -22,10 +22,18 @@
 
     * { box-sizing: border-box; }
 
-    html, body {
-      height: 100%;
+    html {
+      min-height: 100%;
+      background: #000;
+    }
+
+    body {
+      min-height: 100svh;
       margin: 0;
-      background: radial-gradient(circle at 50% 0%, #181739 0%, var(--bg) 56%, #000 100%);
+      background-color: #000;
+      background-image: radial-gradient(circle at 50% 0%, #181739 0%, var(--bg) 56%, #000 100%);
+      background-repeat: no-repeat;
+      background-size: 100% 100svh;
       color: var(--text);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
     }

@@ -115,13 +115,20 @@ class MobileControlsTests(unittest.TestCase):
     def test_mobile_help_text_sits_below_dpad_before_action_buttons(self):
         assert_html_contains(
             self,
-            r'<div class="dpad"[\s\S]*?</div>\s*<p class="help touch-help">[\s\S]*?Hold a direction to keep moving\.[\s\S]*?</p>\s*<div class="touch-actions">',
-            "mobile help text appears directly below the D-pad",
+            r'<div class="dpad"[\s\S]*?</div>\s*<p class="help touch-help">\s*Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad\. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart\.\s*</p>\s*<div class="touch-actions">',
+            "mobile help text appears directly below the D-pad with the original sentence and kbd style",
         )
         assert_html_contains(self, r'class="help desktop-help"', "desktop keyboard help remains available")
         assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*none;', "mobile help starts hidden on desktop")
         assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*block;', "mobile help appears with touch controls")
         assert_html_contains(self, r'\.desktop-help\s*\{[^}]*display:\s*none;', "desktop help hides on mobile")
+
+    def test_touch_button_visual_feedback_is_stronger(self):
+        assert_html_contains(self, r'filter:\s*brightness\(1\.1\);', "pressed controls get 10% brighter")
+        assert_html_contains(self, r'transform:\s*translateY\(2\.2px\);', "pressed controls move 10% farther")
+        assert_html_contains(self, r'0 3\.3px 11px rgba\(0,\s*0,\s*0,\s*0\.35\)', "tap shadow is 10% stronger")
+        assert_html_contains(self, r'0 0 20px rgba\(255,\s*232,\s*90,\s*0\.42\)', "held direction glow is stronger")
+        assert_html_contains(self, r'0 0 20px rgba\(255,\s*92,\s*117,\s*0\.42\)', "restart arming glow is stronger")
 
     def test_touch_buttons_trigger_haptic_feedback_on_normal_tap(self):
         assert_html_contains(self, r'function triggerTouchFeedback\(pattern = 12\)', "haptic feedback helper exists")

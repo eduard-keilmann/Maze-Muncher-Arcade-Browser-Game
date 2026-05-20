@@ -183,6 +183,25 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_not_contains(self, r'canvas\.addEventListener\("pointerdown"', "swipe should not be canvas-only")
         assert_html_not_contains(self, r'canvas\.addEventListener\("pointerup"', "swipe should not be canvas-only")
 
+    def test_continuous_page_swipes_steer_before_finger_release(self):
+        assert_html_contains(self, r'const swipeThreshold = 12;', "continuous swipe threshold is low latency")
+        assert_html_contains(self, r'document\.addEventListener\("pointermove"', "page swipes steer while finger moves")
+        assert_html_contains(
+            self,
+            r'function applyPageSwipeDirection\(direction\)[\s\S]*?newGame\(\);[\s\S]*?setDirection\(direction\);',
+            "page swipe starts game before steering",
+        )
+        assert_html_contains(
+            self,
+            r'function handlePageSwipeMove\(event\)[\s\S]*?Math\.hypot\(dx,\s*dy\) < swipeThreshold[\s\S]*?return;',
+            "small finger drift is ignored",
+        )
+        assert_html_contains(
+            self,
+            r'handlePageSwipeMove\(event\)[\s\S]*?applyPageSwipeDirection\([\s\S]*?\);[\s\S]*?touchStart\.x = event\.clientX;[\s\S]*?touchStart\.y = event\.clientY;',
+            "accepted swipe resets anchor for continuous steering",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

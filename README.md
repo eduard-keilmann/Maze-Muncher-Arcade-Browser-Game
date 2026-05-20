@@ -70,7 +70,3 @@ python -B -m unittest tests/test_mobile_controls.py tests/test_mobile_qa_checkli
 - Architecture notes: `specs_architecture.md`
 - Mobile QA checklist: `issues/mobile-qa-checklist.md`
 - Remaining human/device validation: `issues/hitl-remaining.md`
-
-## Status
-
-Playable now. Remaining work is real-device QA on Safari/Chrome mobile and tablet comfort checks.

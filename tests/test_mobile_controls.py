@@ -130,6 +130,7 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*none;', "mobile help starts hidden on desktop")
         assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*block;', "mobile help appears with touch controls")
         assert_html_contains(self, r'\.desktop-help\s*\{[^}]*display:\s*none;', "desktop help hides on mobile")
+        assert_html_contains(self, r'kbd\s*\{[^}]*color:\s*#fff;', "kbd chip text keeps original white color")
         assert_html_contains(self, r'border:\s*1px solid rgba\(255,\s*232,\s*90,\s*0\.72\);', "kbd chips use yellowish thin frame")
 
     def test_touch_button_visual_feedback_is_stronger(self):

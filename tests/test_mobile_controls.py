@@ -120,16 +120,17 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'--touch-font-size:\s*1\.8rem', "default mobile D-pad icons are larger")
         assert_html_contains(self, r'width:\s*min\(100%,\s*360px\)', "touch controls container fits larger controls")
 
-    def test_control_help_uses_original_single_paragraph_style(self):
+    def test_mobile_help_text_sits_below_dpad_with_original_kbd_style(self):
         assert_html_contains(
             self,
-            r'</section>\s*<p class="help">\s*Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad\. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart\.\s*</p>',
-            "control help uses the original single help paragraph after touch controls",
+            r'<div class="dpad"[\s\S]*?</div>\s*<p class="help touch-help">\s*Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad\. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart\.\s*</p>\s*<div class="touch-actions">',
+            "mobile help text appears directly below the D-pad with the original sentence and kbd style",
         )
-        assert_html_not_contains(self, r'class="help touch-help"', "mobile-only help paragraph should be removed")
-        assert_html_not_contains(self, r'class="help desktop-help"', "desktop-only help paragraph should be removed")
-        assert_html_not_contains(self, r'\.touch-help', "touch-help styling should be removed")
-        assert_html_not_contains(self, r'\.desktop-help', "desktop-help styling should be removed")
+        assert_html_contains(self, r'class="help desktop-help"', "desktop keyboard help remains available")
+        assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*none;', "mobile help starts hidden on desktop")
+        assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*block;', "mobile help appears with touch controls")
+        assert_html_contains(self, r'\.desktop-help\s*\{[^}]*display:\s*none;', "desktop help hides on mobile")
+        assert_html_contains(self, r'border:\s*1px solid rgba\(255,\s*232,\s*90,\s*0\.72\);', "kbd chips use yellowish thin frame")
 
     def test_touch_button_visual_feedback_is_stronger(self):
         assert_html_contains(self, r'filter:\s*brightness\(1\.1\);', "pressed controls get 10% brighter")

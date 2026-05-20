@@ -210,6 +210,8 @@
       body {
         align-content: start;
         padding: 10px;
+        touch-action: none;
+        overscroll-behavior: none;
       }
 
       .shell {
@@ -1682,22 +1684,46 @@
       }
     }, { passive: false });
 
-    let touchStart = null;
-    canvas.addEventListener("pointerdown", event => {
-      canvas.setPointerCapture(event.pointerId);
-      touchStart = { x: event.clientX, y: event.clientY };
-      if (state === "title" || state === "gameover") newGame();
-    });
+    function shouldHandlePageSwipe(event) {
+      const target = event.target;
+      if (!(target instanceof Element)) return false;
+      if (target.closest("button, a, input, textarea, select")) return false;
+      return event.pointerType !== "mouse" || target === canvas;
+    }
 
-    canvas.addEventListener("pointerup", event => {
+    let touchStart = null;
+    document.addEventListener("pointerdown", event => {
+      if (!shouldHandlePageSwipe(event)) return;
+      event.preventDefault();
+      touchStart = {
+        x: event.clientX,
+        y: event.clientY,
+        target: event.target,
+      };
+      if (event.target === canvas && canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+      if (event.target === canvas && (state === "title" || state === "gameover")) newGame();
+    }, { passive: false });
+
+    document.addEventListener("pointerup", event => {
       if (!touchStart) return;
+      event.preventDefault();
       const dx = event.clientX - touchStart.x;
       const dy = event.clientY - touchStart.y;
+      const swipeStartedOnCanvas = touchStart.target === canvas;
       touchStart = null;
-      if (Math.hypot(dx, dy) < 18) return;
+      if (Math.hypot(dx, dy) < 18) {
+        if (swipeStartedOnCanvas && (state === "title" || state === "gameover")) newGame();
+        return;
+      }
+      if (state === "title" || state === "gameover") newGame();
       if (Math.abs(dx) > Math.abs(dy)) setDirection(dx < 0 ? DIRS.left : DIRS.right);
       else setDirection(dy < 0 ? DIRS.up : DIRS.down);
-    });
+    }, { passive: false });
+
+    document.addEventListener("pointercancel", event => {
+      if (touchStart) event.preventDefault();
+      touchStart = null;
+    }, { passive: false });
 
     // Draw a valid title screen before the first game starts. Without this,
     // the first render can fail because the maze grid has not been created yet.

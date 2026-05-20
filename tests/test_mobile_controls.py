@@ -16,6 +16,14 @@ def assert_html_contains(test_case, pattern, description):
     )
 
 
+def assert_html_not_contains(test_case, pattern, description):
+    test_case.assertNotRegex(
+        HTML,
+        re.compile(pattern),
+        f"Unexpected mobile controls behavior present: {description}",
+    )
+
+
 class MobileControlsTests(unittest.TestCase):
     def test_page_background_does_not_repeat_under_tall_mobile_controls(self):
         assert_html_contains(self, r'html\s*\{[^}]*background:\s*#000;', "page overflow background stays black")
@@ -145,6 +153,34 @@ class MobileControlsTests(unittest.TestCase):
             "direction buttons vibrate on normal tap",
         )
         assert_html_contains(self, r'triggerTouchFeedback\(\[18,\s*40,\s*18\]\);', "completed restart long press gets confirm feedback")
+
+    def test_whole_page_swipes_control_player_on_mobile(self):
+        assert_html_contains(
+            self,
+            r'@media\s*\(pointer:\s*coarse\),\s*\(max-width:\s*700px\)\s*\{[\s\S]*?body\s*\{[^}]*touch-action:\s*none;[^}]*overscroll-behavior:\s*none;',
+            "mobile page panning is disabled so swipes steer reliably",
+        )
+        assert_html_contains(self, r'function shouldHandlePageSwipe\(event\)', "page swipe target helper exists")
+        assert_html_contains(
+            self,
+            r'target\.closest\("button, a, input, textarea, select"\)',
+            "page swipe ignores interactive controls",
+        )
+        assert_html_contains(
+            self,
+            r'return event\.pointerType !== "mouse" \|\| target === canvas;',
+            "desktop mouse swipes stay limited to the canvas",
+        )
+        assert_html_contains(self, r'document\.addEventListener\("pointerdown"', "whole-page swipe starts on document")
+        assert_html_contains(self, r'document\.addEventListener\("pointerup"', "whole-page swipe ends on document")
+        assert_html_contains(self, r'document\.addEventListener\("pointercancel"', "cancelled page swipes clear state")
+        assert_html_contains(
+            self,
+            r'if \(state === "title" \|\| state === "gameover"\) newGame\(\);[\s\S]*?setDirection',
+            "valid page swipe starts game before steering",
+        )
+        assert_html_not_contains(self, r'canvas\.addEventListener\("pointerdown"', "swipe should not be canvas-only")
+        assert_html_not_contains(self, r'canvas\.addEventListener\("pointerup"', "swipe should not be canvas-only")
 
 
 if __name__ == "__main__":

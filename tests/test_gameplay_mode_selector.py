@@ -35,12 +35,20 @@ class GameplayModeSelectorTests(unittest.TestCase):
         assert_html_contains(self, r'GAMEPLAY_MODES\s*=\s*\[', "gameplay mode list")
         assert_html_contains(self, r'"maze-muncher"', "Maze Muncher mode id")
         assert_html_contains(self, r'"old-like"', "Old-like mode id")
+        assert_html_contains(self, r'DEFAULT_GAMEPLAY_MODE_ID\s*=\s*"old-like"', "Old-like default mode")
         assert_html_contains(self, r'GAMEPLAY_MODE_STORAGE_KEY\s*=\s*"mazeMuncherGameplayMode"', "mode storage key")
         assert_html_contains(self, r'localStorage\.getItem\(GAMEPLAY_MODE_STORAGE_KEY\)', "saved mode restored")
         assert_html_contains(self, r'localStorage\.setItem\(GAMEPLAY_MODE_STORAGE_KEY,\s*activeGameplayMode\.id\)', "selected mode saved")
         assert_html_contains(self, r'function setGameplayMode', "mode setter exists")
         assert_html_contains(self, r'function toggleGameplayMode', "mode toggle exists")
         assert_html_contains(self, r'modeLabel\.textContent\s*=\s*activeGameplayMode\.label', "button label updates")
+
+        finder_body = find_function_body("findGameplayMode")
+        self.assertRegex(
+            finder_body,
+            re.compile(r'DEFAULT_GAMEPLAY_MODE_ID'),
+            "Unknown or absent stored mode should fall back to the explicit default",
+        )
 
     def test_mode_switching_is_limited_to_title_and_game_over_without_starting(self):
         assert_html_contains(self, r'modeButton\.addEventListener\("click"', "mode button click listener")

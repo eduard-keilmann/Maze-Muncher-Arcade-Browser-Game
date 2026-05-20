@@ -59,6 +59,42 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"ghostReleaseBase:\s*\(level\)\s*=>\s*Math\.max\(0,\s*2\.5 - level \* 0\.15\)", "current ghost release formula")
         assert_html_contains(self, r"modeCycle:\s*\(\)\s*=>\s*MODE_CYCLE", "current scatter/chase cycle")
 
+    def test_old_like_mode_cycles_use_level_bands_and_get_more_chase_heavy(self):
+        assert_html_contains(self, r"OLD_LIKE_MODE_CYCLES\s*=\s*\{", "Old-like mode-cycle table")
+        assert_html_contains(
+            self,
+            r'"level-1":\s*\[[\s\S]*?\{ mode:\s*"scatter",\s*duration:\s*7 \}[\s\S]*?\{ mode:\s*"chase",\s*duration:\s*20 \}',
+            "Old-like level 1 begins with original-like scatter and chase",
+        )
+        assert_html_contains(
+            self,
+            r'"levels-2-4":\s*\[[\s\S]*?\{ mode:\s*"chase",\s*duration:\s*1033 \}',
+            "Old-like levels 2-4 become chase-heavy",
+        )
+        assert_html_contains(
+            self,
+            r'"levels-5-8":\s*\[[\s\S]*?\{ mode:\s*"scatter",\s*duration:\s*5 \}[\s\S]*?\{ mode:\s*"chase",\s*duration:\s*1037 \}',
+            "Old-like levels 5+ shorten scatter and extend chase",
+        )
+        assert_html_contains(
+            self,
+            r"modeCycle:\s*\(level\)\s*=>\s*OLD_LIKE_MODE_CYCLES\[levelBandFor\(level\)\]",
+            "Old-like mode cycle uses level-band selection",
+        )
+
+    def test_frightened_mode_interrupts_scatter_chase_timing(self):
+        update_mode_body = find_function_body("updateMode")
+        self.assertRegex(
+            update_mode_body,
+            re.compile(r"if\s*\(frightenedTimer > 0\)\s*\{[\s\S]*?frightenedTimer -= dt[\s\S]*?return;"),
+            "Frightened mode should consume frightened time before scatter/chase timing",
+        )
+        self.assertRegex(
+            update_mode_body,
+            re.compile(r"modeTimer \+= dt[\s\S]*?modeCycleFor\(activeGameplayMode,\s*level\)[\s\S]*?reverseNormalGhosts\(\)"),
+            "Normal scatter/chase timing should resume after frightened mode ends",
+        )
+
     def test_old_like_level_bands_are_defined(self):
         assert_html_contains(self, r"if\s*\(level <= 1\) return \"level-1\";", "level 1 band")
         assert_html_contains(self, r"if\s*\(level <= 4\) return \"levels-2-4\";", "levels 2-4 band")

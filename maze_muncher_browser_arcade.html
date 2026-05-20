@@ -309,8 +309,8 @@
     <h1>MAZE MUNCHER</h1>
     <section class="mode-controls" aria-label="Gameplay mode">
       <button class="mode-button" type="button" data-action="mode" aria-label="Gameplay mode">
-        <span data-mode-label>MODE: MAZE MUNCHER</span>
-        <span hidden>MODE: OLD-LIKE</span>
+        <span data-mode-label>MODE: OLD-LIKE</span>
+        <span hidden>MODE: MAZE MUNCHER</span>
       </button>
     </section>
     <div class="frame">
@@ -366,6 +366,7 @@
     canvas.height = H;
 
     const GAMEPLAY_MODE_STORAGE_KEY = "mazeMuncherGameplayMode";
+    const DEFAULT_GAMEPLAY_MODE_ID = "old-like";
     const GAMEPLAY_MODES = [
       { id: "maze-muncher", label: "MODE: MAZE MUNCHER", footerLabel: "MAZE MUNCHER MODE", highScoreKey: "mazeMuncherHighScore" },
       { id: "old-like", label: "MODE: OLD-LIKE", footerLabel: "OLD-LIKE MODE", highScoreKey: "mazeMuncherOldLikeHighScore" }
@@ -423,6 +424,59 @@
       { mode: "scatter", duration: 5 },
       { mode: "chase", duration: Infinity }
     ];
+
+    const OLD_LIKE_MODE_CYCLES = {
+      "level-1": [
+        { mode: "scatter", duration: 7 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 7 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: Infinity }
+      ],
+      "levels-2-4": [
+        { mode: "scatter", duration: 7 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 7 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 1033 },
+        { mode: "scatter", duration: 1 / 60 },
+        { mode: "chase", duration: Infinity }
+      ],
+      "levels-5-8": [
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 1037 },
+        { mode: "scatter", duration: 1 / 60 },
+        { mode: "chase", duration: Infinity }
+      ],
+      "levels-9-16": [
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 1037 },
+        { mode: "scatter", duration: 1 / 60 },
+        { mode: "chase", duration: Infinity }
+      ],
+      "levels-17-plus": [
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 20 },
+        { mode: "scatter", duration: 5 },
+        { mode: "chase", duration: 1037 },
+        { mode: "scatter", duration: 1 / 60 },
+        { mode: "chase", duration: Infinity }
+      ]
+    };
 
     const OLD_LIKE_LEVEL_BANDS = {
       "level-1": {
@@ -505,7 +559,7 @@
         ghostReleaseBase: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostReleaseBase,
         frightenedMovement: "random",
         tunnelGhostSpeedMultiplier: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].tunnelGhostSpeedMultiplier,
-        modeCycle: () => MODE_CYCLE
+        modeCycle: (level) => OLD_LIKE_MODE_CYCLES[levelBandFor(level)]
       }
     };
 
@@ -568,7 +622,7 @@
     }
 
     function findGameplayMode(modeId) {
-      return GAMEPLAY_MODES.find(mode => mode.id === modeId) || GAMEPLAY_MODES[0];
+      return GAMEPLAY_MODES.find(mode => mode.id === modeId) || GAMEPLAY_MODES.find(mode => mode.id === DEFAULT_GAMEPLAY_MODE_ID);
     }
 
     function getStoredGameplayModeId() {

@@ -1691,7 +1691,31 @@
       return event.pointerType !== "mouse" || target === canvas;
     }
 
+    const swipeThreshold = 12;
     let touchStart = null;
+
+    function directionFromSwipeDelta(dx, dy) {
+      if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? DIRS.left : DIRS.right;
+      return dy < 0 ? DIRS.up : DIRS.down;
+    }
+
+    function applyPageSwipeDirection(direction) {
+      if (state === "title" || state === "gameover") newGame();
+      setDirection(direction);
+    }
+
+    function handlePageSwipeMove(event) {
+      if (!touchStart) return;
+      event.preventDefault();
+      const dx = event.clientX - touchStart.x;
+      const dy = event.clientY - touchStart.y;
+      if (Math.hypot(dx, dy) < swipeThreshold) return;
+
+      applyPageSwipeDirection(directionFromSwipeDelta(dx, dy));
+      touchStart.x = event.clientX;
+      touchStart.y = event.clientY;
+    }
+
     document.addEventListener("pointerdown", event => {
       if (!shouldHandlePageSwipe(event)) return;
       event.preventDefault();
@@ -1704,20 +1728,17 @@
       if (event.target === canvas && (state === "title" || state === "gameover")) newGame();
     }, { passive: false });
 
+    document.addEventListener("pointermove", event => {
+      if (!touchStart) return;
+      handlePageSwipeMove(event);
+    }, { passive: false });
+
     document.addEventListener("pointerup", event => {
       if (!touchStart) return;
-      event.preventDefault();
-      const dx = event.clientX - touchStart.x;
-      const dy = event.clientY - touchStart.y;
       const swipeStartedOnCanvas = touchStart.target === canvas;
+      handlePageSwipeMove(event);
+      if (swipeStartedOnCanvas && (state === "title" || state === "gameover")) newGame();
       touchStart = null;
-      if (Math.hypot(dx, dy) < 18) {
-        if (swipeStartedOnCanvas && (state === "title" || state === "gameover")) newGame();
-        return;
-      }
-      if (state === "title" || state === "gameover") newGame();
-      if (Math.abs(dx) > Math.abs(dy)) setDirection(dx < 0 ? DIRS.left : DIRS.right);
-      else setDirection(dy < 0 ? DIRS.up : DIRS.down);
     }, { passive: false });
 
     document.addEventListener("pointercancel", event => {

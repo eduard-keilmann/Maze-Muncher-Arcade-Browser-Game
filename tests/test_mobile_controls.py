@@ -130,12 +130,13 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*none;', "mobile help starts hidden on desktop")
         assert_html_contains(self, r'\.touch-help\s*\{[^}]*display:\s*block;', "mobile help appears with touch controls")
         assert_html_contains(self, r'\.desktop-help\s*\{[^}]*display:\s*none;', "desktop help hides on mobile")
-        assert_html_contains(self, r'kbd\s*\{[^}]*color:\s*#fff;', "kbd chip text keeps original white color")
-        assert_html_contains(self, r'border:\s*1px solid #ffe85a;', "kbd chips use a hard yellow frame")
+        assert_html_contains(self, r'kbd\s*\{[^}]*display:\s*inline-block;', "kbd chips expose the blue glow outside the frame")
+        assert_html_contains(self, r'kbd\s*\{[^}]*color:\s*inherit;', "kbd chip text matches surrounding help text")
+        assert_html_contains(self, r'border:\s*0\.5px solid #ffe85a;', "kbd chips use a thinner hard yellow frame")
         assert_html_contains(
             self,
-            r'box-shadow:\s*0 0 0 1px rgba\(59,\s*70,\s*216,\s*0\.55\),\s*0 0 8px rgba\(57,\s*70,\s*216,\s*0\.38\);',
-            "kbd chips add blue fade beyond the yellow frame",
+            r'box-shadow:\s*0 0 0 1px rgba\(31,\s*85,\s*255,\s*0\.7\),\s*0 0 10px 2px rgba\(31,\s*85,\s*255,\s*0\.42\);',
+            "kbd chips add visible blue fade beyond the yellow frame",
         )
 
     def test_touch_button_visual_feedback_is_stronger(self):

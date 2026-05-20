@@ -13,9 +13,11 @@
       --muted: #a7a6c7;
       --accent: #ffe85a;
       --mobile-gap: 10px;
-      --touch-size: 58px;
+      --touch-size: 64px;
       --touch-gap: 8px;
-      --touch-action-height: 46px;
+      --touch-action-height: 50px;
+      --touch-action-width: 124px;
+      --touch-font-size: 1.62rem;
     }
 
     * { box-sizing: border-box; }
@@ -106,7 +108,7 @@
 
     .touch-controls {
       display: none;
-      width: min(100%, 320px);
+      width: min(100%, 360px);
       justify-items: center;
       gap: 10px;
       touch-action: none;
@@ -135,7 +137,7 @@
       border-radius: 10px;
       background: #11113a;
       color: #fff7a5;
-      font: 700 1.45rem/1 ui-monospace, Menlo, monospace;
+      font: 700 var(--touch-font-size)/1 ui-monospace, Menlo, monospace;
       box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.42), 0 6px 18px rgba(0, 0, 0, 0.35);
       touch-action: none;
       user-select: none;
@@ -175,7 +177,7 @@
     }
 
     .touch-action-button {
-      width: 116px;
+      width: var(--touch-action-width);
       height: var(--touch-action-height);
       grid-auto-flow: column;
       gap: 6px;
@@ -219,9 +221,11 @@
     @media (pointer: coarse) and (max-height: 760px) and (orientation: portrait) {
       :root {
         --mobile-gap: 6px;
-        --touch-size: 52px;
+        --touch-size: 58px;
         --touch-gap: 6px;
-        --touch-action-height: 42px;
+        --touch-action-height: 46px;
+        --touch-action-width: 120px;
+        --touch-font-size: 1.5rem;
       }
 
       body {
@@ -234,7 +238,7 @@
       }
 
       .frame {
-        width: min(100%, calc(100svh - 300px));
+        width: min(100%, calc(100svh - 320px));
         min-width: 270px;
         padding: 6px;
       }
@@ -253,9 +257,11 @@
     @media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
       :root {
         --mobile-gap: 8px;
-        --touch-size: 50px;
+        --touch-size: 56px;
         --touch-gap: 6px;
-        --touch-action-height: 40px;
+        --touch-action-height: 44px;
+        --touch-action-width: 110px;
+        --touch-font-size: 1.45rem;
       }
 
       body {
@@ -265,7 +271,7 @@
 
       .shell {
         width: min(100%, 960px);
-        grid-template-columns: minmax(280px, calc(100svh - 24px)) minmax(178px, 230px);
+        grid-template-columns: minmax(280px, calc(100svh - 24px)) minmax(214px, 250px);
         grid-template-areas:
           "title title"
           "game controls";
@@ -294,7 +300,6 @@
       }
 
       .touch-action-button {
-        width: 104px;
         font-size: 0.74rem;
       }
 

@@ -86,6 +86,14 @@ class SoundControlsTests(unittest.TestCase):
         assert_html_contains(self, r"linearRampToValueAtTime\(volume, startAt \+ attack\)", "music fades in smoothly")
         assert_html_contains(self, r"linearRampToValueAtTime\(0\.0001, endAt \+ release\)", "music fades out smoothly")
 
+    def test_high_threat_music_pulse_rate_is_faster(self):
+        assert_html_contains(self, r"function musicPulseInterval\(threat\)", "music pulse interval helper exists")
+        assert_html_contains(
+            self,
+            r"return 0\.62 - threat \* 0\.38;",
+            "high threat lowers pulse interval enough to raise beep rate",
+        )
+
     def test_music_loop_is_state_gated_and_updated_from_game_loop(self):
         assert_html_contains(self, r"function shouldMusicPlay\(\)[\s\S]*?state === \"playing\"[\s\S]*?!paused", "music only plays during active gameplay")
         assert_html_contains(self, r"function update\(dt\)[\s\S]*?updateMusicLoop\(dt\);", "game loop updates music")

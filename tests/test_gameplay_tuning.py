@@ -112,6 +112,21 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r'value:\s*5000', "Old-like high-value fruit tuning exists")
         assert_html_contains(self, r"tunnelGhostSpeedMultiplier:\s*0\.[0-9]+", "Old-like tunnel slowdown tuning exists")
 
+
+    def test_old_like_power_mode_duration_gets_one_second_tuning_boost(self):
+        for band, seconds in [
+            ("level-1", 7),
+            ("levels-2-4", 6),
+            ("levels-5-8", 3.5),
+            ("levels-9-16", 2),
+            ("levels-17-plus", 0),
+        ]:
+            assert_html_contains(
+                self,
+                rf'"{band}":\s*\{{[\s\S]*?frightenedTime:\s*{seconds}',
+                f"Old-like {band} frightened time",
+            )
+
     def test_old_like_fruit_names_and_values_follow_original_like_sequence(self):
         assert_html_contains(self, r"OLD_LIKE_FRUIT_SEQUENCE\s*=\s*\[", "Old-like fruit sequence")
         for fruit_name, fruit_value in [

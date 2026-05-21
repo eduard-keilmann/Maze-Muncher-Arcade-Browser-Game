@@ -1134,9 +1134,15 @@
       return r === TUNNEL_ROW && (c < 6 || c >= COLS - 6);
     }
 
+    function isTunnelContinuationZone(actor) {
+      const { c, r } = tileAt(actor.x, actor.y);
+      return r === TUNNEL_ROW && (c <= 6 || c >= COLS - 7);
+    }
+
     function tunnelContinuationDirection(actor) {
-      if (!isTunnelSide(actor)) return null;
+      if (!isTunnelContinuationZone(actor)) return null;
       if (actor.dir && actor.dir.dy === 0 && canMove(actor, actor.dir, "ghost")) return actor.dir;
+      if (actor.lastDir && actor.lastDir.dy === 0 && canMove(actor, actor.lastDir, "ghost")) return actor.lastDir;
       if (actor.x < 0 && canMove(actor, DIRS.right, "ghost")) return DIRS.right;
       if (actor.x >= COLS * TILE && canMove(actor, DIRS.left, "ghost")) return DIRS.left;
       if (actor.x < COLS * TILE / 2 && canMove(actor, DIRS.left, "ghost")) return DIRS.left;

@@ -184,8 +184,13 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"function tunnelContinuationDirection\(actor\)", "tunnel continuation helper exists")
         assert_html_contains(
             self,
-            r"function tunnelContinuationDirection\(actor\)[\s\S]*?if \(!isTunnelSide\(actor\)\) return null;",
-            "tunnel continuation only applies in tunnel side lanes",
+            r"function isTunnelContinuationZone\(actor\)[\s\S]*?c <= 6[\s\S]*?c >= COLS - 7",
+            "tunnel continuation includes tunnel-mouth entry junctions",
+        )
+        assert_html_contains(
+            self,
+            r"function tunnelContinuationDirection\(actor\)[\s\S]*?if \(!isTunnelContinuationZone\(actor\)\) return null;",
+            "tunnel continuation only applies in tunnel side lanes and mouth junctions",
         )
         assert_html_contains(
             self,

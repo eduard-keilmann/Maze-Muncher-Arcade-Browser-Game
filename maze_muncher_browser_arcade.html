@@ -680,6 +680,7 @@
     let soundEnabled = readSoundEnabled();
     const MASTER_VOLUME = 0.12;
     let audioContext = null;
+    let audioPrimed = false;
     let pelletToneHigh = false;
 
     function createAudioContext() {
@@ -694,9 +695,24 @@
       return audioContext;
     }
 
+    function primeAudioOutput() {
+      const context = getAudioContext();
+      if (!context || audioPrimed) return;
+      audioPrimed = true;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.01);
+    }
+
     function unlockAudio() {
       const context = getAudioContext();
-      if (context && context.state === "suspended") audioContext.resume();
+      if (!context) return;
+      if (context.state === "suspended") audioContext.resume();
+      primeAudioOutput();
     }
 
     function playTone(frequency, delay, duration, volume = MASTER_VOLUME) {
@@ -766,18 +782,13 @@
     }
 
     function toggleSound() {
-      const wasEnabled = soundEnabled;
-      if (wasEnabled) {
-        unlockAudio();
-        previewSound();
-        return;
-      }
-
-      soundEnabled = true;
+      soundEnabled = !soundEnabled;
       saveSoundPreference();
       renderSoundMode();
-      unlockAudio();
-      previewSound();
+      if (soundEnabled) {
+        unlockAudio();
+        previewSound();
+      }
     }
 
     function readHighScore() {
@@ -1773,6 +1784,9 @@
         touchControls.addEventListener(eventName, cancelRestartPress, { passive: false });
       }
     }
+
+    document.addEventListener("touchend", unlockAudio, { once: true, passive: true });
+    document.addEventListener("click", unlockAudio, { once: true, passive: true });
 
     if (modeButton) {
       modeButton.addEventListener("click", event => {

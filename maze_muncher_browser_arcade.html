@@ -1171,7 +1171,7 @@
 
     function isTunnelContinuationZone(actor) {
       const { c, r } = tileAt(actor.x, actor.y);
-      return r === TUNNEL_ROW && (c <= 6 || c >= COLS - 7);
+      return r === TUNNEL_ROW && (c < 6 || c >= COLS - 6);
     }
 
     function tunnelDeadEndEscapeDirection(actor) {
@@ -1193,15 +1193,6 @@
     function tunnelContinuationDirection(actor) {
       if (!isTunnelContinuationZone(actor)) return null;
       const { c } = tileAt(actor.x, actor.y);
-
-      if (c === 6) {
-        if (actor.dir && actor.dir.name === "right") return null;
-        return canMove(actor, DIRS.left, "ghost") ? DIRS.left : null;
-      }
-      if (c === COLS - 7) {
-        if (actor.dir && actor.dir.name === "left") return null;
-        return canMove(actor, DIRS.right, "ghost") ? DIRS.right : null;
-      }
 
       if (actor.dir && actor.dir.dy === 0 && canMove(actor, actor.dir, "ghost")) return actor.dir;
       if (actor.lastDir && actor.lastDir.dy === 0 && canMove(actor, actor.lastDir, "ghost")) return actor.lastDir;

@@ -199,8 +199,8 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"function tunnelContinuationDirection\(actor\)", "tunnel continuation helper exists")
         assert_html_contains(
             self,
-            r"function isTunnelContinuationZone\(actor\)[\s\S]*?c <= 6[\s\S]*?c >= COLS - 7",
-            "tunnel continuation includes tunnel-mouth entry junctions",
+            r"function isTunnelContinuationZone\(actor\)[\s\S]*?c < 6[\s\S]*?c >= COLS - 6",
+            "tunnel continuation applies only inside side tunnels, not at mouth intersections",
         )
         assert_html_contains(
             self,
@@ -224,6 +224,20 @@ class GameplayTuningTests(unittest.TestCase):
             re.compile(r"const tunnelDir = tunnelContinuationDirection\(actor\);[\s\S]*?if \(tunnelDir\) \{[\s\S]*?actor\.dir = tunnelDir;[\s\S]*?return;[\s\S]*?\}[\s\S]*?actor\.dir = chooseGhostDirection\(actor\);"),
             "Ghosts should keep tunnel continuation before normal target selection",
         )
+
+    def test_tunnel_mouth_intersections_use_ghost_target_selection(self):
+        continuation_body = find_function_body("tunnelContinuationDirection")
+        self.assertNotRegex(
+            continuation_body,
+            re.compile(r"c === 6|c === COLS - 7"),
+            "Tunnel mouth intersections should not force ghosts into the tunnel before target selection",
+        )
+        assert_html_contains(
+            self,
+            r"function isTunnelContinuationZone\(actor\)[\s\S]*?c < 6[\s\S]*?c >= COLS - 6",
+            "tunnel continuation applies only after ghosts are inside the side tunnel",
+        )
+
 
     def test_low_frame_delta_does_not_snap_tunnel_ghost_back_to_center(self):
         assert_html_contains(

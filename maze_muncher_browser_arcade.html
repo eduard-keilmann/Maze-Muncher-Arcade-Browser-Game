@@ -748,6 +748,28 @@
       oscillator.stop(endAt + 0.01);
     }
 
+    function playMusicTone(frequency, delay, duration, volume = MUSIC_VOLUME) {
+      const context = getAudioContext();
+      if (!context) return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const startAt = context.currentTime + delay;
+      const endAt = startAt + duration;
+      const attack = 0.028;
+      const release = 0.035;
+
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(frequency, startAt);
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.linearRampToValueAtTime(volume, startAt + attack);
+      gain.gain.linearRampToValueAtTime(Math.max(volume * 0.72, 0.0001), endAt);
+      gain.gain.linearRampToValueAtTime(0.0001, endAt + release);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(startAt);
+      oscillator.stop(endAt + release + 0.01);
+    }
+
     function playSequence(notes, volume = MASTER_VOLUME) {
       for (const [frequency, delay, duration] of notes) playTone(frequency, delay, duration, volume);
     }
@@ -856,19 +878,19 @@
 
     function previewMusic() {
       if (!musicEnabled) return;
-      playTone(147, 0, 0.055, MUSIC_VOLUME);
-      playTone(220, 0.08, 0.06, MUSIC_VOLUME * 0.8);
+      playMusicTone(147, 0, 0.055, MUSIC_VOLUME);
+      playMusicTone(220, 0.08, 0.06, MUSIC_VOLUME * 0.8);
     }
 
     function playMusicPulse(threat = computeThreatLevel()) {
       if (!musicEnabled) return;
       if (frightenedTimer > 0) {
         const frequency = musicPulseIndex % 2 === 0 ? 196 : 247;
-        playTone(frequency, 0, 0.045, MUSIC_VOLUME * 0.75);
+        playMusicTone(frequency, 0, 0.045, MUSIC_VOLUME * 0.75);
       } else {
         const base = threat > 0.65 ? 165 : threat > 0.35 ? 147 : 123;
-        playTone(musicPulseIndex % 2 === 0 ? base : base * 1.25, 0, 0.04, MUSIC_VOLUME);
-        if (threat > 0.72) playTone(base * 1.5, 0.055, 0.03, MUSIC_VOLUME * 0.72);
+        playMusicTone(musicPulseIndex % 2 === 0 ? base : base * 1.25, 0, 0.04, MUSIC_VOLUME);
+        if (threat > 0.72) playMusicTone(base * 1.5, 0.055, 0.03, MUSIC_VOLUME * 0.72);
       }
       musicPulseIndex++;
     }

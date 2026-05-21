@@ -73,10 +73,18 @@ class SoundControlsTests(unittest.TestCase):
         assert_html_contains(self, r"const MUSIC_VOLUME = 0\.078;", "threat music matches the previous normal pellet tick volume")
         assert_html_contains(self, r"function playMusicPulse\(", "generated music pulse helper exists")
         assert_html_contains(self, r"function previewMusic\(\)", "music preview helper exists")
-        assert_html_contains(self, r"playTone\([^\n]+MUSIC_VOLUME", "music uses generated tones")
+        assert_html_contains(self, r"playMusicTone\([^\n]+MUSIC_VOLUME", "music uses generated soft tones")
         assert_html_contains(self, r"function startMusicLoop\(\)", "music loop start helper exists")
         assert_html_contains(self, r"function stopMusicLoop\(\)", "music loop stop helper exists")
         self.assertNotRegex(HTML, re.compile(r"\.(mp3|wav|ogg|m4a)"), "Music must not add audio assets")
+
+    def test_music_tones_use_soft_attack_to_avoid_click_distortion(self):
+        assert_html_contains(self, r"function playMusicTone\(", "music has separate soft-tone helper")
+        assert_html_contains(self, r"oscillator\.type = \"triangle\"", "music avoids harsh square-wave attacks")
+        assert_html_contains(self, r"const attack = 0\.028;", "music attack is long enough to avoid clicks")
+        assert_html_contains(self, r"const release = 0\.035;", "music release is smoothed")
+        assert_html_contains(self, r"linearRampToValueAtTime\(volume, startAt \+ attack\)", "music fades in smoothly")
+        assert_html_contains(self, r"linearRampToValueAtTime\(0\.0001, endAt \+ release\)", "music fades out smoothly")
 
     def test_music_loop_is_state_gated_and_updated_from_game_loop(self):
         assert_html_contains(self, r"function shouldMusicPlay\(\)[\s\S]*?state === \"playing\"[\s\S]*?!paused", "music only plays during active gameplay")

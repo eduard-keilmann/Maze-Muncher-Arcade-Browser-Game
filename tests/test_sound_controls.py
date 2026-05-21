@@ -70,8 +70,9 @@ class SoundControlsTests(unittest.TestCase):
         assert_html_contains(self, r"musicLabel\.textContent\s*=\s*musicEnabled \? \"MUSIC: ON\" : \"MUSIC: OFF\"", "music label updates")
 
     def test_music_uses_generated_web_audio_and_separate_quiet_volume(self):
-        assert_html_contains(self, r"const MUSIC_VOLUME = MASTER_VOLUME \* 0\.18;", "music is quieter than effects")
+        assert_html_contains(self, r"const MUSIC_VOLUME = MASTER_VOLUME \* 0\.28;", "music is quiet but audible under effects")
         assert_html_contains(self, r"function playMusicPulse\(", "generated music pulse helper exists")
+        assert_html_contains(self, r"function previewMusic\(\)", "music preview helper exists")
         assert_html_contains(self, r"playTone\([^\n]+MUSIC_VOLUME", "music uses generated tones")
         assert_html_contains(self, r"function startMusicLoop\(\)", "music loop start helper exists")
         assert_html_contains(self, r"function stopMusicLoop\(\)", "music loop stop helper exists")
@@ -81,13 +82,24 @@ class SoundControlsTests(unittest.TestCase):
         assert_html_contains(self, r"function shouldMusicPlay\(\)[\s\S]*?state === \"playing\"[\s\S]*?!paused", "music only plays during active gameplay")
         assert_html_contains(self, r"function update\(dt\)[\s\S]*?updateMusicLoop\(dt\);", "game loop updates music")
         assert_html_contains(self, r"function updateMusicLoop\(dt\)[\s\S]*?if \(!shouldMusicPlay\(\)\) \{[\s\S]*?stopMusicLoop\(\);[\s\S]*?return;[\s\S]*?\}", "music stops outside playing state")
-        assert_html_contains(self, r"function toggleMusic\(\)[\s\S]*?if \(musicEnabled\) \{[\s\S]*?unlockAudio\(\);[\s\S]*?startMusicLoop\(\);[\s\S]*?\} else \{[\s\S]*?stopMusicLoop\(\);", "music toggle starts and stops loop")
+        assert_html_contains(self, r"function toggleMusic\(\)[\s\S]*?if \(musicEnabled\) \{[\s\S]*?unlockAudio\(\);[\s\S]*?previewMusic\(\);[\s\S]*?startMusicLoop\(\);[\s\S]*?\} else \{[\s\S]*?stopMusicLoop\(\);", "music toggle previews, starts, and stops loop")
 
     def test_music_threat_formula_uses_gameplay_danger_inputs(self):
         assert_html_contains(self, r"function computeThreatLevel\(\)[\s\S]*?ghosts[\s\S]*?g\.state !== \"eaten\"[\s\S]*?g\.state !== \"home\"", "threat ignores inactive ghosts")
         assert_html_contains(self, r"function computeThreatLevel\(\)[\s\S]*?frightenedTimer > 0[\s\S]*?Math\.min\(1, frightenedTimer / 2\)", "frightened ending raises tension")
         assert_html_contains(self, r"function computeThreatLevel\(\)[\s\S]*?pelletsRemaining[\s\S]*?modeCycle\[modeIndex\]\.mode === \"chase\"", "pellets and chase mode affect threat")
         assert_html_contains(self, r"Math\.max\(0, Math\.min\(1, threat\)\)", "threat is clamped")
+
+
+    def test_music_threat_formula_does_not_call_elroy_without_ghost(self):
+        threat_body = re.search(r"function computeThreatLevel\(\) \{(?P<body>[\s\S]*?)\n    \}", HTML)
+        self.assertIsNotNone(threat_body, "Missing computeThreatLevel body")
+        self.assertNotRegex(
+            threat_body.group("body"),
+            re.compile(r"oldLikeElroyStage\(\)"),
+            "Music threat must not call ghost-specific Elroy helper without a ghost",
+        )
+        assert_html_contains(self, r"dangerousGhosts\.some\(g => oldLikeElroyStage\(g\)\)", "Elroy pressure checks red ghost safely")
 
     def test_music_control_unlocks_audio_for_iphone(self):
         assert_html_contains(self, r"musicButton\.addEventListener\(\"click\"[\s\S]*?unlockAudio\(\);", "music button unlocks audio")

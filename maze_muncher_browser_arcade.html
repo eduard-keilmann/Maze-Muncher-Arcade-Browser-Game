@@ -844,7 +844,7 @@
 
       const modeCycle = modeCycleFor(activeGameplayMode, level);
       if (modeCycle[modeIndex].mode === "chase") threat += 0.18;
-      if (oldLikeElroyStage()) threat += 0.16;
+      if (dangerousGhosts.some(g => oldLikeElroyStage(g))) threat += 0.16;
 
       return Math.max(0, Math.min(1, threat));
     }

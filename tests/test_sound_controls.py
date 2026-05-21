@@ -46,6 +46,16 @@ class SoundControlsTests(unittest.TestCase):
         for call, description in expected_calls.items():
             assert_html_contains(self, re.escape(call), description)
 
+    def test_sound_toggle_gives_audible_preview_when_sound_is_on(self):
+        assert_html_contains(self, r"const MASTER_VOLUME = 0\.12;", "sound effects are loud enough to hear on phones")
+        assert_html_contains(self, r"function previewSound\(\)", "sound preview helper exists")
+        assert_html_contains(self, r"previewSound\(\);", "sound button can play immediate preview")
+        assert_html_contains(
+            self,
+            r"if \(wasEnabled\) \{[\s\S]*?unlockAudio\(\);[\s\S]*?previewSound\(\);[\s\S]*?return;",
+            "clicking SOUND: ON previews audio instead of silently switching off first",
+        )
+
     def test_user_gestures_unlock_audio_before_play_actions(self):
         assert_html_contains(self, r"function setDirection\(dir\)[\s\S]*?unlockAudio\(\);[\s\S]*?newGame\(\);", "movement unlocks audio before auto-start")
         assert_html_contains(self, r"modeButton\.addEventListener\(\"click\"[\s\S]*?unlockAudio\(\);", "mode button unlocks audio")

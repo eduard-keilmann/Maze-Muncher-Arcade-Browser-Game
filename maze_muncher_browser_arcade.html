@@ -90,6 +90,8 @@
 
     .mode-controls {
       display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       justify-content: center;
     }
 
@@ -343,6 +345,9 @@
         <span data-mode-label>MODE: OLD-LIKE</span>
         <span hidden>MODE: MAZE MUNCHER</span>
       </button>
+      <button class="mode-button" type="button" data-action="sound" aria-label="Sound" aria-pressed="true">
+        <span data-sound-label>SOUND: ON</span>
+      </button>
     </section>
     <div class="frame">
       <canvas id="game" width="560" height="712" aria-label="Maze chase arcade game canvas"></canvas>
@@ -386,6 +391,8 @@
     const ctx = canvas.getContext("2d", { alpha: false });
     const modeButton = document.querySelector('[data-action="mode"]');
     const modeLabel = document.querySelector("[data-mode-label]");
+    const soundButton = document.querySelector('[data-action="sound"]');
+    const soundLabel = document.querySelector("[data-sound-label]");
 
     const TILE = 20;
     const COLS = 28;
@@ -400,6 +407,7 @@
     canvas.height = H;
 
     const GAMEPLAY_MODE_STORAGE_KEY = "mazeMuncherGameplayMode";
+    const SOUND_STORAGE_KEY = "mazeMuncherSoundEnabled";
     const DEFAULT_GAMEPLAY_MODE_ID = "old-like";
     const GAMEPLAY_MODES = [
       { id: "maze-muncher", label: "MODE: MAZE MUNCHER", footerLabel: "MAZE MUNCHER MODE", highScoreKey: "mazeMuncherHighScore" },
@@ -665,6 +673,103 @@
 
     let activeGameplayMode = findGameplayMode(getStoredGameplayModeId());
 
+    function readSoundEnabled() {
+      try { return localStorage.getItem(SOUND_STORAGE_KEY) !== "false"; } catch (_) { return true; }
+    }
+
+    let soundEnabled = readSoundEnabled();
+    let audioContext = null;
+    let pelletToneHigh = false;
+
+    function createAudioContext() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return null;
+      return new AudioContext();
+    }
+
+    function getAudioContext() {
+      if (!soundEnabled) return null;
+      if (!audioContext) audioContext = createAudioContext();
+      return audioContext;
+    }
+
+    function unlockAudio() {
+      const context = getAudioContext();
+      if (context && context.state === "suspended") audioContext.resume();
+    }
+
+    function playTone(frequency, delay, duration, volume = 0.045) {
+      const context = getAudioContext();
+      if (!context) return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const startAt = context.currentTime + delay;
+      const endAt = startAt + duration;
+
+      oscillator.type = "square";
+      oscillator.frequency.setValueAtTime(frequency, startAt);
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(startAt);
+      oscillator.stop(endAt + 0.01);
+    }
+
+    function playSequence(notes, volume = 0.045) {
+      for (const [frequency, delay, duration] of notes) playTone(frequency, delay, duration, volume);
+    }
+
+    function playStartSound() {
+      playSequence([[392, 0, 0.07], [523, 0.08, 0.07], [659, 0.16, 0.08], [784, 0.25, 0.12]], 0.04);
+    }
+
+    function playPelletSound(cell) {
+      if (cell === "o") {
+        playSequence([[247, 0, 0.05], [330, 0.06, 0.06], [494, 0.13, 0.08]], 0.045);
+        return;
+      }
+      pelletToneHigh = !pelletToneHigh;
+      playTone(pelletToneHigh ? 232 : 184, 0, 0.035, 0.032);
+    }
+
+    function playFruitSound() {
+      playSequence([[523, 0, 0.05], [784, 0.06, 0.06], [1047, 0.13, 0.08]], 0.045);
+    }
+
+    function playGhostEatenSound() {
+      playSequence([[330, 0, 0.06], [494, 0.07, 0.08], [660, 0.16, 0.1]], 0.05);
+    }
+
+    function playDeathSound() {
+      playSequence([[392, 0, 0.09], [330, 0.1, 0.09], [262, 0.2, 0.12], [196, 0.34, 0.18]], 0.05);
+    }
+
+    function playLevelClearSound() {
+      playSequence([[523, 0, 0.07], [659, 0.08, 0.07], [784, 0.16, 0.07], [1047, 0.26, 0.16]], 0.045);
+    }
+
+    function saveSoundPreference() {
+      try { localStorage.setItem(SOUND_STORAGE_KEY, String(soundEnabled)); } catch (_) {}
+    }
+
+    function renderSoundMode() {
+      if (!soundLabel || !soundButton) return;
+      soundLabel.textContent = soundEnabled ? "SOUND: ON" : "SOUND: OFF";
+      soundButton.setAttribute("aria-pressed", String(soundEnabled));
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      saveSoundPreference();
+      renderSoundMode();
+      if (soundEnabled) {
+        unlockAudio();
+        playStartSound();
+      }
+    }
+
     function readHighScore() {
       try { return Number(localStorage.getItem(activeGameplayMode.highScoreKey) || 0); } catch (_) { return 0; }
     }
@@ -766,6 +871,7 @@
     }
 
     function newGame() {
+      playStartSound();
       score = 0;
       level = 1;
       lives = 3;
@@ -1135,6 +1241,7 @@
         pelletsRemaining--;
         pelletsEaten++;
         awardScore(cell === "." ? 10 : 50);
+        playPelletSound(cell);
 
         if (cell === "o") {
           frightenedTimer = frightenedTimeFor(activeGameplayMode, level);
@@ -1147,6 +1254,7 @@
         if (pelletsRemaining <= 0) {
           levelClearTimer = 1.9;
           state = "levelclear";
+          playLevelClearSound();
           messages.push({ text: "MAZE CLEAR", x: W / 2, y: HUD + 16 * TILE, time: 1.4, life: 1.4, size: 22 });
         }
       }
@@ -1174,6 +1282,7 @@
       fruit.time -= dt;
       if (Math.hypot(player.x - fruit.x, player.y - fruit.y) < 12) {
         awardScore(fruit.value);
+        playFruitSound();
         messages.push({ text: String(fruit.value), x: fruit.x, y: HUD + fruit.y - 8, time: 0.8, life: 0.8, size: 16 });
         fruit = null;
       } else if (fruit.time <= 0) {
@@ -1188,6 +1297,7 @@
 
         if (g.state === "normal" && frightenedTimer > 0) {
           awardScore(ghostEatValue);
+          playGhostEatenSound();
           messages.push({ text: String(ghostEatValue), x: g.x, y: HUD + g.y - 10, time: 0.9, life: 0.9, size: 16 });
           ghostEatValue = Math.min(1600, ghostEatValue * 2);
           g.state = "eaten";
@@ -1203,6 +1313,7 @@
     }
 
     function loseLife() {
+      playDeathSound();
       lives--;
       if (lives <= 0) {
         state = "gameover";
@@ -1533,6 +1644,7 @@
     }
 
     function setDirection(dir) {
+      unlockAudio();
       if (state === "title" || state === "gameover") {
         newGame();
       }
@@ -1566,6 +1678,7 @@
 
     function applyTouchAction(actionName) {
       if (actionName === "pause") {
+        unlockAudio();
         if (state === "title" || state === "gameover") newGame();
         else togglePause();
       }
@@ -1611,6 +1724,7 @@
 
     if (touchControls) {
       touchControls.addEventListener("pointerdown", event => {
+        unlockAudio();
         const actionButton = event.target.closest("[data-action]");
         if (actionButton) {
           event.preventDefault();
@@ -1653,7 +1767,16 @@
     if (modeButton) {
       modeButton.addEventListener("click", event => {
         event.preventDefault();
+        unlockAudio();
         toggleGameplayMode();
+      });
+    }
+
+    if (soundButton) {
+      soundButton.addEventListener("click", event => {
+        event.preventDefault();
+        unlockAudio();
+        toggleSound();
       });
     }
 
@@ -1667,19 +1790,23 @@
 
       if (dir) {
         event.preventDefault();
+        unlockAudio();
         setDirection(dir);
         return;
       }
 
       if (key === " " || key === "spacebar") {
         event.preventDefault();
+        unlockAudio();
         if (state === "title" || state === "gameover") newGame();
         else togglePause();
       } else if (key === "enter") {
         event.preventDefault();
+        unlockAudio();
         if (state === "title" || state === "gameover") newGame();
       } else if (key === "p") {
         event.preventDefault();
+        unlockAudio();
         togglePause();
       }
     }, { passive: false });
@@ -1719,6 +1846,7 @@
     document.addEventListener("pointerdown", event => {
       if (!shouldHandlePageSwipe(event)) return;
       event.preventDefault();
+      unlockAudio();
       touchStart = {
         x: event.clientX,
         y: event.clientY,
@@ -1755,6 +1883,7 @@
     fruit = null;
     resetActors();
     renderGameplayMode();
+    renderSoundMode();
     requestAnimationFrame(gameLoop);
   })();
   </script>

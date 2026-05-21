@@ -210,6 +210,31 @@ class GameplayTuningTests(unittest.TestCase):
             "Ghosts should keep tunnel continuation before normal target selection",
         )
 
+    def test_low_frame_delta_does_not_snap_tunnel_ghost_back_to_center(self):
+        assert_html_contains(
+            self,
+            r"function shouldHandleCenterDecision\(actor\)",
+            "movement has a center-decision guard for tiny frame steps",
+        )
+        assert_html_contains(
+            self,
+            r"actor\.dir\.dx > 0 && actor\.x > centerX[\s\S]*?return false",
+            "right-moving actors that already left center are not snapped back",
+        )
+        assert_html_contains(
+            self,
+            r"actor\.dir\.dx < 0 && actor\.x < centerX[\s\S]*?return false",
+            "left-moving actors that already left center are not snapped back",
+        )
+
+        move_body = find_function_body("moveActor")
+        self.assertRegex(
+            move_body,
+            re.compile(r"if \(shouldHandleCenterDecision\(actor\)\)"),
+            "Movement should use the direction-aware center guard instead of raw center tolerance",
+        )
+
+
     def test_ghosts_do_not_enter_hidden_tunnel_dead_ends(self):
         assert_html_contains(
             self,

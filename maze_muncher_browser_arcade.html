@@ -1104,6 +1104,19 @@
              Math.abs(actor.y - laneCenter(actor.y)) <= CENTER_EPS;
     }
 
+    function shouldHandleCenterDecision(actor) {
+      if (!isAtCenter(actor)) return false;
+      if (!actor.dir) return true;
+
+      const centerX = laneCenter(actor.x);
+      const centerY = laneCenter(actor.y);
+      if (actor.dir.dx > 0 && actor.x > centerX) return false;
+      if (actor.dir.dx < 0 && actor.x < centerX) return false;
+      if (actor.dir.dy > 0 && actor.y > centerY) return false;
+      if (actor.dir.dy < 0 && actor.y < centerY) return false;
+      return true;
+    }
+
     function snapToCenter(actor) {
       actor.x = laneCenter(actor.x);
       actor.y = laneCenter(actor.y);
@@ -1263,7 +1276,7 @@
       let guard = 0;
 
       while (remaining > 0.0001 && guard++ < 8) {
-        if (isAtCenter(actor)) {
+        if (shouldHandleCenterDecision(actor)) {
           handleDecisionPoint(actor, actorType);
           if (!actor.dir) return;
         }

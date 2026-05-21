@@ -2,20 +2,24 @@
 
 `issues/prd_old-like_gameplay.md`
 
+## Status
+
+Implemented in the current codebase. Static tests cover this slice.
+
 ## What to build
 
 Implement Old-like ghost house release behavior from the parent PRD. Ghosts should leave the house based on pellet progress with timer fallback, and release thresholds already passed should remain passed after player death.
 
 ## Acceptance criteria
 
-- [ ] Old-like mode releases home ghosts using pellet-count thresholds.
-- [ ] Old-like mode includes timer fallback so ghosts can leave even if pellet progress stalls.
-- [ ] Red starts outside according to the existing ghost setup.
-- [ ] Pink exits quickly in Old-like mode.
-- [ ] Cyan and orange release later based on Old-like pellet progress or fallback timing.
-- [ ] After player death, current board pellet progress still controls release thresholds.
-- [ ] Maze Muncher mode keeps existing ghost release behavior unless a shared bug fix is required.
-- [ ] Static tests cover the release-spec contract and after-death threshold expectation.
+- [x] Old-like mode releases home ghosts using pellet-count thresholds.
+- [x] Old-like mode includes timer fallback so ghosts can leave even if pellet progress stalls.
+- [x] Red starts outside according to the existing ghost setup.
+- [x] Pink exits quickly in Old-like mode.
+- [x] Cyan and orange release later based on Old-like pellet progress or fallback timing.
+- [x] After player death, current board pellet progress still controls release thresholds.
+- [x] Maze Muncher mode keeps existing ghost release behavior unless a shared bug fix is required.
+- [x] Static tests cover the release-spec contract and after-death threshold expectation.
 
 ## Blocked by
 

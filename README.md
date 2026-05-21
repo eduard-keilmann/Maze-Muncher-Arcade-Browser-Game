@@ -23,9 +23,10 @@ The game runs directly in a modern browser.
 
 - Classic pellet-chasing tension in a compact browser game.
 - Smooth grid movement with buffered turns.
+- Two gameplay modes: `MODE: OLD-LIKE` is the default, and `MODE: MAZE MUNCHER` remains selectable.
 - Four ghosts with chase, scatter, frightened, home, and eaten states.
-- Power pellets let you hunt the ghosts for combo points.
-- Score, high score, lives, levels, pause, ready, death, game-over states, and generated arcade-style sound effects and quiet threat-reactive music.
+- Power pellets turn chase pressure around. In late Old-like levels they can reverse ghosts without making them edible.
+- Score, high score, lives, levels, pause, ready, death, game-over states, generated arcade-style sound effects, and quiet threat-reactive music.
 - Works on desktop and touch screens.
 
 ## Controls
@@ -33,7 +34,7 @@ The game runs directly in a modern browser.
 Desktop:
 
 - Move: Arrow keys or WASD
-- Start: Space, Enter, or a movement key
+- Start: Space, Enter, a movement key, or canvas tap/swipe
 - Pause/resume: Space or P
 - Sound: use SOUND: ON/OFF toggle
 - Music: use MUSIC: ON/OFF toggle
@@ -41,7 +42,7 @@ Desktop:
 
 Touch/mobile:
 
-- Move: use continuous swipe anywhere on the game page or use the on-screen D-pad
+- Move: continuous swipe anywhere on the game page, tap the canvas near the desired turn direction, or use the on-screen D-pad
 - Hold a D-pad direction to keep that turn queued
 - Pause: tap Pause
 - Restart: hold Restart
@@ -53,8 +54,11 @@ Touch/mobile:
 Maze Muncher includes thumb-friendly controls for phones and tablets:
 
 - large on-screen D-pad
+- whole-page continuous swipe steering
+- canvas tap-to-turn steering relative to Maze Muncher
 - press-and-hold direction input
 - visible held-button feedback
+- haptic feedback where the browser supports `navigator.vibrate`
 - compact short-phone portrait layout
 - side-by-side short landscape layout
 - safer long-press restart to avoid accidental resets
@@ -64,7 +68,7 @@ Maze Muncher includes thumb-friendly controls for phones and tablets:
 The repo uses dependency-free Python tests for the static HTML contract:
 
 ```sh
-python -B -m unittest tests/test_mobile_controls.py tests/test_mobile_qa_checklist.py
+python -B -m unittest discover tests
 ```
 
 ## Project Notes

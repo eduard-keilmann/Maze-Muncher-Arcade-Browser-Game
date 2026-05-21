@@ -2,18 +2,22 @@
 
 `issues/prd_old-like_gameplay.md`
 
+## Status
+
+Implemented in the current codebase. Static tests cover this slice.
+
 ## What to build
 
 Implement Old-like scatter/chase timing from the parent PRD. Old-like mode should vary scatter/chase cycles by level band, become chase-heavy in later levels, and preserve frightened-mode interruption behavior.
 
 ## Acceptance criteria
 
-- [ ] Old-like mode uses level-band scatter/chase cycles.
-- [ ] Later Old-like levels become more chase-heavy than early levels.
-- [ ] Frightened mode continues to interrupt normal scatter/chase timing.
-- [ ] Existing ghost personalities remain recognizable.
-- [ ] Maze Muncher mode keeps existing scatter/chase timing unless a shared bug fix is required.
-- [ ] Static tests cover Old-like mode-cycle selection and frightened interruption expectations.
+- [x] Old-like mode uses level-band scatter/chase cycles.
+- [x] Later Old-like levels become more chase-heavy than early levels.
+- [x] Frightened mode continues to interrupt normal scatter/chase timing.
+- [x] Existing ghost personalities remain recognizable.
+- [x] Maze Muncher mode keeps existing scatter/chase timing unless a shared bug fix is required.
+- [x] Static tests cover Old-like mode-cycle selection and frightened interruption expectations.
 
 ## Blocked by
 

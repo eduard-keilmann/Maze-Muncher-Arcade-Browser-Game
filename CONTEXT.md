@@ -62,11 +62,15 @@ _Avoid_: level, difficulty setting
 
 **Original-like mode**:
 A gameplay mode that uses original-like dynamics.
-_Avoid_: replacement default, arcade-accurate clone
+_Avoid_: forced replacement, arcade-accurate clone
 
 **Old-like mode**:
-The player-facing label for Original-like mode.
-_Avoid_: original-like UI label
+The player-facing label for Original-like mode. It is currently the default gameplay mode, while Maze Muncher mode remains selectable.
+_Avoid_: original-like UI label, only available mode
+
+**Touch steering**:
+The mobile input family where whole-page continuous swipe, canvas tap-to-turn, and the touch D-pad all route into the shared direction input path.
+_Avoid_: separate mobile movement physics
 
 ## Relationships
 
@@ -84,7 +88,9 @@ _Avoid_: original-like UI label
 - **Ghost personality** should remain approximate original behavior, not exact arcade emulation.
 - **Original-like mode** is a **Gameplay mode**, not a forced replacement for existing Maze Muncher tuning.
 - **Old-like mode** labels **Original-like mode** in the player UI.
+- **Old-like mode** is the current default **Gameplay mode**, but Maze Muncher mode remains selectable.
 - Each **Gameplay mode** has its own high score.
+- **Touch steering** should not create separate movement rules; it should feed the same direction path as keyboard controls.
 
 ## Example Dialogue
 
@@ -108,3 +114,5 @@ _Avoid_: original-like UI label
 - Maze Muncher mode preserves current tuning unless a shared bug fix is needed.
 - **Gameplay mode** switching changes selected mode and displayed high score, but does not auto-start a run.
 - Current **Gameplay mode** should be visible during play through a compact footer label.
+- Current Old-like **Frightened time** tuning is `7`, `6`, `3.5`, `2`, and `0` seconds for level bands `1`, `2-4`, `5-8`, `9-16`, and `17+`.
+- Canvas tap-to-turn should choose direction relative to Maze Muncher position; continuous swipe should remain available and low-latency.

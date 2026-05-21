@@ -2,20 +2,24 @@
 
 `issues/prd_old-like_gameplay.md`
 
+## Status
+
+Implemented in the current codebase. Static tests cover this slice.
+
 ## What to build
 
 Add the player-facing gameplay mode selector described in the parent PRD. This slice creates the full end-to-end mode-selection path while keeping both modes behavior-identical for now: Maze Muncher remains the baseline, Old-like becomes selectable, the selected mode persists, high scores are separated by mode, and the active mode is visible during play.
 
 ## Acceptance criteria
 
-- [ ] Title and game-over states allow switching between `MODE: MAZE MUNCHER` and `MODE: OLD-LIKE`.
-- [ ] Active play does not allow changing gameplay mode mid-run.
-- [ ] Selected gameplay mode is saved locally and restored on reload.
-- [ ] Maze Muncher and Old-like modes use separate high-score storage.
-- [ ] Switching mode before a run updates the displayed high score but does not auto-start a game.
-- [ ] Footer or equivalent compact play-area text shows the active gameplay mode.
-- [ ] Existing keyboard, swipe, touch movement, pause, and restart behavior still works.
-- [ ] Static tests cover the public mode-selection contract.
+- [x] Title and game-over states allow switching between `MODE: MAZE MUNCHER` and `MODE: OLD-LIKE`.
+- [x] Active play does not allow changing gameplay mode mid-run.
+- [x] Selected gameplay mode is saved locally and restored on reload.
+- [x] Maze Muncher and Old-like modes use separate high-score storage.
+- [x] Switching mode before a run updates the displayed high score but does not auto-start a game.
+- [x] Footer or equivalent compact play-area text shows the active gameplay mode.
+- [x] Existing keyboard, swipe, touch movement, pause, and restart behavior still works.
+- [x] Static tests cover the public mode-selection contract.
 
 ## Blocked by
 

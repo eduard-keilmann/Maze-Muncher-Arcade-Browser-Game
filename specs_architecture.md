@@ -15,7 +15,7 @@ This structure is acceptable while the project remains small. Changes should sta
 
 - Keep core game rules in JavaScript functions, not in HTML attributes or CSS.
 - Keep rendering in canvas draw functions.
-- Keep input adapters thin: keyboard, swipe, touch buttons, and sound/music toggles should call shared game actions such as direction, pause, sound, music, and new game.
+- Keep input adapters thin: keyboard, document/canvas swipe, canvas tap-to-turn, D-pad, pause, restart, sound/music toggles, and mode selection should call shared game actions.
 - Do not duplicate movement or pause/restart business logic inside separate input handlers.
 - Keep CSS responsible for layout and touch affordance only.
 - Keep tests focused on user-visible behavior and public page contract.
@@ -25,18 +25,18 @@ This structure is acceptable while the project remains small. Changes should sta
 - `setDirection(dir)` is the shared direction input path.
 - `togglePause()` is the shared pause/resume path.
 - `newGame()` is the shared start/restart path.
-- Keyboard, canvas swipe, and touch controls should reuse these functions.
-- Canvas rendering functions should not know whether input came from keyboard, swipe, or D-pad.
+- Keyboard, whole-page touch swipe, canvas mouse swipe, canvas tap-to-turn, and touch D-pad should reuse these functions.
+- Canvas rendering functions should not know whether input came from keyboard, swipe, tap, or D-pad.
 - Sound effects and music should be generated with Web Audio; do not copy copyrighted arcade audio assets.
 - Sound and music preferences should stay local to the browser via localStorage.
 
 ## Testing Strategy
 
 - Use Python `unittest` for repo-local, cross-platform static checks while no browser test stack exists.
-- Run tests with:
+- Run the full static suite with:
 
 ```sh
-python -B -m unittest tests/test_mobile_controls.py
+python -B -m unittest discover tests
 ```
 
 - Add browser-level tests only if interaction risk justifies extra tooling.
@@ -46,6 +46,8 @@ python -B -m unittest tests/test_mobile_controls.py
 
 - Mobile controls should remain ordinary buttons for accessibility and browser compatibility.
 - Use pointer events for touch controls so mouse, stylus, and touch share one path.
+- Use document-level pointer events for whole-page touch swipe, but keep mouse swipe/tap steering limited to the canvas.
+- Keep tap-to-turn as a thin input adapter: convert canvas tap position to a direction, then call shared steering.
 - Prefer event delegation inside `.touch-controls` over per-button duplicated handlers.
 - Keep hold-repeat timing local to input handling; game movement should stay frame/update-loop driven.
 - Avoid coupling mobile layout decisions to game physics or canvas internals.

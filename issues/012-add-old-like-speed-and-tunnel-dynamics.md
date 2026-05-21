@@ -2,19 +2,23 @@
 
 `issues/prd_old-like_gameplay.md`
 
+## Status
+
+Implemented in the current codebase. Static tests cover this slice.
+
 ## What to build
 
 Implement Old-like movement-pressure tuning from the parent PRD. Old-like mode should use level-band player and ghost speeds, and ghosts should slow down in tunnels while the player does not.
 
 ## Acceptance criteria
 
-- [ ] Old-like player speed uses level-band tuning.
-- [ ] Old-like ghost speed uses level-band tuning that increases pressure over time.
-- [ ] Ghosts slow down while crossing the tunnel in Old-like mode.
-- [ ] Tunnel slowdown does not apply to the player.
-- [ ] Tunnel slowdown does not interfere with eaten ghost return behavior.
-- [ ] Maze Muncher mode keeps existing speed and tunnel behavior unless a shared bug fix is required.
-- [ ] Static tests cover Old-like speed tuning entry points and tunnel slowdown behavior.
+- [x] Old-like player speed uses level-band tuning.
+- [x] Old-like ghost speed uses level-band tuning that increases pressure over time.
+- [x] Ghosts slow down while crossing the tunnel in Old-like mode.
+- [x] Tunnel slowdown does not apply to the player.
+- [x] Tunnel slowdown does not interfere with eaten ghost return behavior.
+- [x] Maze Muncher mode keeps existing speed and tunnel behavior unless a shared bug fix is required.
+- [x] Static tests cover Old-like speed tuning entry points and tunnel slowdown behavior.
 
 ## Blocked by
 

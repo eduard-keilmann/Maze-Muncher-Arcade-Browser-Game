@@ -2,7 +2,7 @@
 
 Parent PRD: `issues/prd.md`
 
-This file tracks the human/device validation still needed after implementation of issues `001` through `007`.
+This file tracks the human/device validation still needed after implementation of the mobile gameplay improvement pass and later mobile input/audio additions.
 
 ## Summary
 
@@ -20,11 +20,14 @@ Record results in `issues/mobile-qa-checklist.md`.
 - [ ] Test landscape phone behavior.
 - [ ] Check maze readability.
 - [ ] Check D-pad reachability.
-- [ ] Check page scrolling during button press/hold.
+- [ ] Check page scrolling during D-pad hold and whole-page swipe.
+- [ ] Check whole-page continuous swipe steering outside the canvas.
+- [ ] Check canvas tap-to-turn steering relative to Maze Muncher.
 - [ ] Check held direction repeat for at least 2 seconds per direction.
 - [ ] Check pause one-tap behavior.
 - [ ] Check long-press restart behavior.
 - [ ] Check short taps on restart do not restart active gameplay.
+- [ ] Check sound/music unlock and toggle behavior after first user gesture.
 - [ ] Check no text selection, zoom, or tap-highlight distraction during play.
 - [ ] Record main issues found.
 - [ ] Record positive findings.
@@ -39,11 +42,15 @@ Record results in `issues/mobile-qa-checklist.md`.
 - [ ] Test landscape phone behavior.
 - [ ] Check maze readability.
 - [ ] Check D-pad reachability.
-- [ ] Check page scrolling during button press/hold.
+- [ ] Check page scrolling during D-pad hold and whole-page swipe.
+- [ ] Check whole-page continuous swipe steering outside the canvas.
+- [ ] Check canvas tap-to-turn steering relative to Maze Muncher.
 - [ ] Check held direction repeat for at least 2 seconds per direction.
 - [ ] Check pause one-tap behavior.
 - [ ] Check long-press restart behavior.
 - [ ] Check short taps on restart do not restart active gameplay.
+- [ ] Check haptic vibration on D-pad/action taps where supported.
+- [ ] Check sound/music unlock and toggle behavior after first user gesture.
 - [ ] Check no text selection, zoom, or tap-highlight distraction during play.
 - [ ] Record main issues found.
 - [ ] Record positive findings.
@@ -59,6 +66,8 @@ Use `issues/landscape-layout-decision.md` as reference.
 - [ ] Confirm controls are reachable beside the canvas.
 - [ ] Confirm controls do not cover the canvas.
 - [ ] Confirm layout avoids gameplay-disrupting page scroll.
+- [ ] Confirm whole-page swipe still steers in landscape.
+- [ ] Confirm canvas tap-to-turn still works in landscape.
 - [ ] Confirm portrait layout still behaves as expected after landscape changes.
 
 ### 4. Restart Safety Validation
@@ -78,7 +87,9 @@ Use `issues/browser-interaction-test-decision.md` as reference.
 
 - [ ] Keep current decision if manual QA finds no recurring interaction regressions.
 - [ ] Reopen browser automation decision if Safari/Chrome QA finds D-pad hold/release issues.
+- [ ] Reopen browser automation decision if whole-page continuous swipe or canvas tap-to-turn misfires.
 - [ ] Reopen browser automation decision if long-press restart misfires or fails.
+- [ ] Reopen browser automation decision if audio unlock differs across mobile browsers.
 - [ ] Reopen browser automation decision if layout regressions recur after CSS changes.
 - [ ] If automation is added later, keep it cross-platform and avoid platform-specific scripts.
 
@@ -92,12 +103,16 @@ Use `issues/browser-interaction-test-decision.md` as reference.
 - [x] Landscape CSS layout contract exists.
 - [x] Restart safety decision exists.
 - [x] Long-press mobile restart contract exists.
+- [x] Whole-page swipe contract exists.
+- [x] Continuous swipe steering before finger release exists.
+- [x] Canvas tap-to-turn contract exists.
+- [x] Sound/music toggle and Web Audio contracts exist.
 - [x] Browser automation decision exists.
 
 ## Current Verification Command
 
 ```sh
-python -B -m unittest tests/test_mobile_controls.py tests/test_mobile_qa_checklist.py
+python -B -m unittest discover tests
 ```
 
 Expected current result: all tests pass.

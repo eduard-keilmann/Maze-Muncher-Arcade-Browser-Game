@@ -1,6 +1,6 @@
 ## Problem Statement
 
-Mobile gameplay is now functional, but not yet systematically validated or polished for real Safari and Chrome phone use. The current touch controls provide a D-pad, large buttons, press-and-hold direction behavior, pause, restart, and mobile spacing. Remaining risk is practical playability: short screens may feel cramped, landscape may be awkward, held buttons may not clearly show active state, restart may be too easy to hit by accident, and tests do not yet exercise real browser interaction.
+Mobile gameplay is functional and has several implemented input improvements, but still needs systematic real-device validation on Safari iPhone and Chrome Android. Current touch controls provide a D-pad, large buttons, press-and-hold direction behavior, whole-page continuous swipe, canvas tap-to-turn, pause, long-press restart, stronger visual feedback, and mobile spacing. Remaining risk is practical playability on real devices: viewport chrome, audio unlock, touch timing, scroll prevention, and accidental input behavior can differ from static tests.
 
 The user wants a systematic plan to finish mobile gameplay improvements without overengineering the static browser-game architecture.
 
@@ -79,21 +79,22 @@ Each phase should start with a clear acceptance check, then make the smallest im
 - Changing ghost AI, scoring, pellet rules, or level progression.
 - Adding a build system without a separate decision.
 - Adding mobile app packaging.
-- Adding multiplayer, save slots, settings menus, or audio.
+- Adding multiplayer, save slots, settings menus, or unrelated audio features.
 - Supporting unusual browsers beyond current Safari and Chrome mobile targets.
 - Introducing platform-specific scripts or test files.
 
 ## Further Notes
 
-Recommended order:
+Current status:
 
-1. Fix current test target drift if the main HTML filename changed.
-2. Create a manual QA checklist and capture first Safari/Chrome observations.
-3. Tune portrait sizing and spacing for short screens.
-4. Re-test and decide whether landscape layout is necessary.
-5. Add held-button visual state if current feedback is unclear.
-6. Decide restart safety from QA evidence.
-7. Reassess whether browser interaction tests are worth adding.
+Most code/static-test slices are implemented. Remaining work is real-device QA and follow-up tuning only if device observations show problems.
+
+Recommended next order:
+
+1. Run the full static suite.
+2. Complete Safari iPhone QA in `issues/mobile-qa-checklist.md`.
+3. Complete Chrome Android QA in `issues/mobile-qa-checklist.md`.
+4. Reassess whether browser interaction tests are worth adding only if manual QA finds repeated regressions.
 
 Success criteria:
 

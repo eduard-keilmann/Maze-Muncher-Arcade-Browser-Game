@@ -2,17 +2,21 @@
 
 `issues/prd_old-like_gameplay.md`
 
+## Status
+
+Implemented in the current codebase. Static tests cover this slice.
+
 ## What to build
 
 Introduce mode-aware gameplay tuning functions that provide a stable rule lookup surface for later Old-like behavior. This slice should preserve current Maze Muncher behavior while adding the Old-like level-band structure described in the parent PRD.
 
 ## Acceptance criteria
 
-- [ ] Gameplay tuning is routed through named functions instead of scattered one-off formulas where practical.
-- [ ] Maze Muncher mode preserves current speed, frightened-time, fruit, and ghost-timing behavior.
-- [ ] Old-like mode has level bands for level 1, levels 2-4, levels 5-8, levels 9-16, and levels 17+.
-- [ ] Old-like tuning functions exist for the later slices to use.
-- [ ] Static tests verify Old-like level bands and mode-aware tuning entry points.
+- [x] Gameplay tuning is routed through named functions instead of scattered one-off formulas where practical.
+- [x] Maze Muncher mode preserves current speed, frightened-time, fruit, and ghost-timing behavior.
+- [x] Old-like mode has level bands for level 1, levels 2-4, levels 5-8, levels 9-16, and levels 17+.
+- [x] Old-like tuning functions exist for the later slices to use.
+- [x] Static tests verify Old-like level bands and mode-aware tuning entry points.
 
 ## Blocked by
 

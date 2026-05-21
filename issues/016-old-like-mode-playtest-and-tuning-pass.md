@@ -2,6 +2,10 @@
 
 `issues/prd_old-like_gameplay.md`
 
+## Status
+
+Ready for human playtest. Implementation blocker slices are complete in code/static tests. Acceptance criteria below remain manual until real playtest results are recorded. Current Old-like frightened-time tuning is 7, 6, 3.5, 2, and 0 seconds by level band.
+
 ## What to build
 
 Run a human playtest and tuning pass for Old-like mode after the mode infrastructure, core dynamics, and ghost-pressure slices are implemented. The goal is to verify that Old-like mode feels meaningfully closer to original Pac-Man without becoming an arcade-perfect clone or an unfair difficulty spike.
@@ -16,14 +20,14 @@ Run a human playtest and tuning pass for Old-like mode after the mode infrastruc
 - [ ] Record any tuning adjustments needed before considering Old-like mode complete.
 - [ ] Confirm no new requirement has pushed the feature toward arcade-perfect clone scope.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/010-add-old-like-power-pellet-dynamics.md`
-- Blocked by `issues/011-add-old-like-fruit-and-extra-life-scoring.md`
-- Blocked by `issues/012-add-old-like-speed-and-tunnel-dynamics.md`
-- Blocked by `issues/013-add-old-like-ghost-house-release.md`
-- Blocked by `issues/014-add-old-like-cruise-elroy.md`
-- Blocked by `issues/015-add-old-like-scatter-chase-cycles.md`
+- [x] `issues/010-add-old-like-power-pellet-dynamics.md`
+- [x] `issues/011-add-old-like-fruit-and-extra-life-scoring.md`
+- [x] `issues/012-add-old-like-speed-and-tunnel-dynamics.md`
+- [x] `issues/013-add-old-like-ghost-house-release.md`
+- [x] `issues/014-add-old-like-cruise-elroy.md`
+- [x] `issues/015-add-old-like-scatter-chase-cycles.md`
 
 ## User stories addressed
 

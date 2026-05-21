@@ -6,7 +6,7 @@ The user wants gameplay that feels closer to original Pac-Man dynamics without t
 
 ## Solution
 
-Add gameplay modes. Keep the current Maze Muncher tuning as the default baseline mode, and add an Old-like mode that approximates original Pac-Man pressure, pacing, scoring, fruit progression, ghost timing, and late-board tension.
+Add gameplay modes. Keep the current Maze Muncher tuning available as a selectable baseline mode, and add an Old-like mode that approximates original Pac-Man pressure, pacing, scoring, fruit progression, ghost timing, and late-board tension. Old-like is now the default mode.
 
 The work should be phased:
 
@@ -14,7 +14,7 @@ The work should be phased:
 2. Add Old-like core dynamics: level-band formulas, speed tuning, frightened-time behavior, fruit values, extra life, and ghost tunnel slowdown.
 3. Add Old-like ghost-pressure dynamics: pellet-based ghost house release, Cruise Elroy, level-band scatter/chase cycles, and simplified frightened movement.
 
-The user should choose the gameplay mode before starting a run. Mode switching should be allowed on title and game-over screens, persisted across sessions, and reflected in separate high scores. The active mode should also be visible during play through a compact footer label.
+The user should choose the gameplay mode before starting a run when changing away from the default. Mode switching should be allowed on title and game-over screens, persisted across sessions, and reflected in separate high scores. The active mode should also be visible during play through a compact footer label.
 
 ## User Stories
 
@@ -73,7 +73,7 @@ The user should choose the gameplay mode before starting a run. Mode switching s
 
 - Add a player-selectable gameplay mode concept with two modes: current Maze Muncher tuning and Old-like tuning.
 - The UI label for the original-like mode is "Old-like"; internal documentation may continue using "original-like dynamics" for precision.
-- The current Maze Muncher mode is preserved as the baseline. Old-like mode is additive, not a replacement.
+- Old-like mode is the default. The current Maze Muncher mode is preserved as a selectable baseline, so Old-like is additive and not a forced replacement.
 - Mode switching is allowed only before a run starts, on title and game-over states.
 - Mode switching updates selected mode and displayed high score but does not start a new run automatically.
 - Selected gameplay mode is persisted locally.
@@ -85,7 +85,7 @@ The user should choose the gameplay mode before starting a run. Mode switching s
 - Phase 2 adds Old-like pellet-count ghost release, timer fallback, Cruise Elroy, level-band scatter/chase cycles, and simplified frightened movement.
 - Old-like difficulty uses step-band formulas, not exact level tables and not smooth linear scaling.
 - Old-like level bands are level 1, levels 2-4, levels 5-8, levels 9-16, and levels 17+.
-- Old-like frightened time is useful early, short in the middle game, and zero in late game.
+- Old-like frightened time is useful early, short in the middle game, and zero in late game. Current tuned values are 7, 6, 3.5, 2, and 0 seconds across the configured level bands.
 - Power pellets always score points and reverse normal ghosts. They only make ghosts edible when the current Old-like frightened time is above zero.
 - Old-like player and ghost speeds use level bands so ghosts close the pressure gap over time.
 - Ghost tunnel slowdown applies to ghosts only, and not while eaten.
@@ -131,7 +131,7 @@ The user should choose the gameplay mode before starting a run. Mode switching s
 - Replacing Maze Muncher mode with Old-like mode.
 - Switching gameplay mode during active play.
 - Adding a full settings menu.
-- Adding audio.
+- Copying original Pac-Man audio or melody.
 - Adding multiple mazes.
 - Adding distinct fruit artwork in the first gameplay-dynamics pass.
 - Adding new dependencies or a build system.
@@ -155,7 +155,7 @@ Recommended implementation order:
 Success criteria:
 
 - Maze Muncher mode still behaves like the current game.
-- Old-like mode is easy to select, persists, and has separate high score.
+- Old-like mode is the default, persists, and has separate high score; Maze Muncher mode remains selectable.
 - Old-like mode becomes meaningfully closer to original Pac-Man dynamics.
 - The project remains a static, dependency-light browser game.
 - Tests document the public behavior expected from each phase.

@@ -77,7 +77,10 @@ class MobileControlsTests(unittest.TestCase):
             r'@media\s*\(pointer:\s*coarse\)\s*and\s*\(max-height:\s*760px\)\s*and\s*\(orientation:\s*portrait\)',
             "short portrait mobile media query",
         )
-        assert_html_contains(self, r'--touch-size:\s*64px', "short portrait keeps larger thumb-friendly D-pad buttons")
+        assert_html_contains(self, r'--touch-square-size:\s*64px', "short portrait keeps saved square D-pad size")
+        assert_html_contains(self, r'--touch-width:\s*74px', "short portrait uses wider D-pad buttons")
+        assert_html_contains(self, r'--touch-height:\s*var\(--touch-square-size\)', "short portrait preserves saved square height")
+        assert_html_contains(self, r'--touch-wing-offset:\s*5px', "short portrait nudges left and right outward")
         assert_html_contains(self, r'--touch-action-height:\s*50px', "short portrait keeps larger usable action buttons")
         assert_html_contains(self, r'--touch-action-width:\s*124px', "short portrait keeps wider action buttons")
         assert_html_contains(self, r'--mobile-gap:\s*6px', "short portrait compacts vertical spacing")
@@ -108,13 +111,25 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'\.frame\s*\{[^}]*grid-area:\s*game;', "frame assigned to game area")
         assert_html_contains(self, r'\.touch-controls\s*\{[^}]*grid-area:\s*controls;', "touch controls assigned beside canvas")
         assert_html_contains(self, r'\.help\s*\{[^}]*display:\s*none;', "landscape hides help to reduce scroll pressure")
-        assert_html_contains(self, r'--touch-size:\s*60px', "landscape keeps larger thumb-friendly controls")
+        assert_html_contains(self, r'--touch-square-size:\s*60px', "landscape keeps saved square D-pad size")
+        assert_html_contains(self, r'--touch-width:\s*70px', "landscape uses wider D-pad buttons")
+        assert_html_contains(self, r'--touch-height:\s*var\(--touch-square-size\)', "landscape preserves saved square height")
+        assert_html_contains(self, r'--touch-wing-offset:\s*5px', "landscape nudges left and right outward")
         assert_html_contains(self, r'--touch-action-height:\s*48px', "landscape keeps larger action controls")
         assert_html_contains(self, r'--touch-action-width:\s*116px', "landscape keeps wider action controls")
         assert_html_contains(self, r'minmax\(230px,\s*260px\)', "landscape reserves enough width for larger controls")
 
-    def test_mobile_controls_use_larger_default_touch_targets(self):
-        assert_html_contains(self, r'--touch-size:\s*72px', "default mobile D-pad buttons are visibly larger")
+    def test_mobile_controls_use_wider_dpad_with_saved_square_layout(self):
+        assert_html_contains(self, r'--touch-square-size:\s*72px', "default mobile keeps saved square D-pad size")
+        assert_html_contains(self, r'--touch-width:\s*84px', "default mobile D-pad buttons are wider than tall")
+        assert_html_contains(self, r'--touch-height:\s*var\(--touch-square-size\)', "default mobile D-pad height keeps saved square size")
+        assert_html_contains(self, r'--touch-wing-offset:\s*6px', "default mobile nudges left and right outward")
+        assert_html_contains(self, r'grid-template-columns:\s*repeat\(3,\s*var\(--touch-width\)\)', "D-pad grid uses widened columns")
+        assert_html_contains(self, r'grid-template-rows:\s*repeat\(3,\s*var\(--touch-height\)\)', "D-pad grid keeps centered row height")
+        assert_html_contains(self, r'width:\s*var\(--touch-width\);[\s\S]*?height:\s*var\(--touch-height\);', "D-pad buttons use rectangular dimensions")
+        assert_html_contains(self, r'Saved square D-pad layout:[^\n]*--touch-width:\s*var\(--touch-square-size\)[^\n]*--touch-wing-offset:\s*0px', "old square D-pad layout is documented for easy rollback")
+        assert_html_contains(self, r'\.dpad-left\s*\{[^}]*--touch-button-offset:\s*calc\(-1 \* var\(--touch-wing-offset\)\);', "left D-pad button shifts slightly outward")
+        assert_html_contains(self, r'\.dpad-right\s*\{[^}]*--touch-button-offset:\s*var\(--touch-wing-offset\);', "right D-pad button shifts slightly outward")
         assert_html_contains(self, r'--touch-action-height:\s*54px', "default mobile action buttons are taller")
         assert_html_contains(self, r'--touch-action-width:\s*132px', "default mobile action buttons are wider")
         assert_html_contains(self, r'--touch-font-size:\s*1\.8rem', "default mobile D-pad icons are larger")
@@ -138,7 +153,7 @@ class MobileControlsTests(unittest.TestCase):
 
     def test_touch_button_visual_feedback_is_stronger(self):
         assert_html_contains(self, r'filter:\s*brightness\(1\.1\);', "pressed controls get 10% brighter")
-        assert_html_contains(self, r'transform:\s*translateY\(2\.2px\);', "pressed controls move 10% farther")
+        assert_html_contains(self, r'transform:\s*translateX\(var\(--touch-button-offset,\s*0px\)\) translateY\(2\.2px\);', "pressed controls move 10% farther while preserving side offsets")
         assert_html_contains(self, r'0 3\.3px 11px rgba\(0,\s*0,\s*0,\s*0\.35\)', "tap shadow is 10% stronger")
         assert_html_contains(self, r'0 0 20px rgba\(255,\s*232,\s*90,\s*0\.42\)', "held direction glow is stronger")
         assert_html_contains(self, r'0 0 20px rgba\(255,\s*92,\s*117,\s*0\.42\)', "restart arming glow is stronger")

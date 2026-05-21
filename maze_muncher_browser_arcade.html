@@ -13,8 +13,11 @@
       --muted: #a7a6c7;
       --accent: #ffe85a;
       --mobile-gap: 10px;
-      --touch-size: 72px;
+      --touch-square-size: 72px;
+      --touch-width: 84px;
+      --touch-height: var(--touch-square-size);
       --touch-gap: 10px;
+      --touch-wing-offset: 6px;
       --touch-action-height: 54px;
       --touch-action-width: 132px;
       --touch-font-size: 1.8rem;
@@ -132,17 +135,19 @@
 
     .dpad {
       display: grid;
-      grid-template-columns: repeat(3, var(--touch-size));
-      grid-template-rows: repeat(3, var(--touch-size));
+      grid-template-columns: repeat(3, var(--touch-width));
+      grid-template-rows: repeat(3, var(--touch-height));
       gap: var(--touch-gap);
       justify-content: center;
       align-items: center;
     }
 
+    /* Saved square D-pad layout: set --touch-width: var(--touch-square-size) and --touch-wing-offset: 0px. */
+
     .touch-button,
     .dpad-spacer {
-      width: var(--touch-size);
-      height: var(--touch-size);
+      width: var(--touch-width);
+      height: var(--touch-height);
     }
 
     .touch-button {
@@ -154,6 +159,7 @@
       color: #fff7a5;
       font: 700 var(--touch-font-size)/1 ui-monospace, Menlo, monospace;
       box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.42), 0 6px 18px rgba(0, 0, 0, 0.35);
+      transform: translateX(var(--touch-button-offset, 0px));
       touch-action: none;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -161,7 +167,7 @@
 
     .touch-button:active {
       filter: brightness(1.1);
-      transform: translateY(2.2px);
+      transform: translateX(var(--touch-button-offset, 0px)) translateY(2.2px);
       box-shadow: inset 0 -2.2px 0 rgba(0, 0, 0, 0.42), 0 3.3px 11px rgba(0, 0, 0, 0.35);
     }
 
@@ -170,7 +176,7 @@
       background: #2d2858;
       color: #fff;
       filter: brightness(1.1);
-      transform: translateY(2.2px);
+      transform: translateX(var(--touch-button-offset, 0px)) translateY(2.2px);
       box-shadow: inset 0 -2.2px 0 rgba(0, 0, 0, 0.42), 0 0 20px rgba(255, 232, 90, 0.42);
     }
 
@@ -179,13 +185,13 @@
       background: #331222;
       color: #fff;
       filter: brightness(1.1);
-      transform: translateY(2.2px);
+      transform: translateX(var(--touch-button-offset, 0px)) translateY(2.2px);
       box-shadow: inset 0 -2.2px 0 rgba(0, 0, 0, 0.42), 0 0 20px rgba(255, 92, 117, 0.42);
     }
 
     .dpad-up { grid-column: 2; grid-row: 1; }
-    .dpad-left { grid-column: 1; grid-row: 2; }
-    .dpad-right { grid-column: 3; grid-row: 2; }
+    .dpad-left { grid-column: 1; grid-row: 2; --touch-button-offset: calc(-1 * var(--touch-wing-offset)); }
+    .dpad-right { grid-column: 3; grid-row: 2; --touch-button-offset: var(--touch-wing-offset); }
     .dpad-down { grid-column: 2; grid-row: 3; }
 
     .touch-actions {
@@ -249,8 +255,11 @@
     @media (pointer: coarse) and (max-height: 760px) and (orientation: portrait) {
       :root {
         --mobile-gap: 6px;
-        --touch-size: 64px;
+        --touch-square-size: 64px;
+        --touch-width: 74px;
+        --touch-height: var(--touch-square-size);
         --touch-gap: 7px;
+        --touch-wing-offset: 5px;
         --touch-action-height: 50px;
         --touch-action-width: 124px;
         --touch-font-size: 1.62rem;
@@ -285,8 +294,11 @@
     @media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
       :root {
         --mobile-gap: 8px;
-        --touch-size: 60px;
+        --touch-square-size: 60px;
+        --touch-width: 70px;
+        --touch-height: var(--touch-square-size);
         --touch-gap: 7px;
+        --touch-wing-offset: 5px;
         --touch-action-height: 48px;
         --touch-action-width: 116px;
         --touch-font-size: 1.55rem;

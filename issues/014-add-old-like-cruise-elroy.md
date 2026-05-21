@@ -21,10 +21,10 @@ Implement simplified Old-like Cruise Elroy behavior for red ghost. When few pell
 - [x] Maze Muncher mode keeps existing red ghost behavior unless a shared bug fix is required.
 - [x] Static tests cover the Elroy spec and state restrictions.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/009-add-mode-aware-tuning-functions.md`
-- Blocked by `issues/012-add-old-like-speed-and-tunnel-dynamics.md`
+- [x] `issues/009-add-mode-aware-tuning-functions.md`
+- [x] `issues/012-add-old-like-speed-and-tunnel-dynamics.md`
 
 ## User stories addressed
 

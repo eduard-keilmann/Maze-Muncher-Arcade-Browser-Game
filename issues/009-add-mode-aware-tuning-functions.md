@@ -18,9 +18,9 @@ Introduce mode-aware gameplay tuning functions that provide a stable rule lookup
 - [x] Old-like tuning functions exist for the later slices to use.
 - [x] Static tests verify Old-like level bands and mode-aware tuning entry points.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/008-add-gameplay-mode-selector.md`
+- [x] `issues/008-add-gameplay-mode-selector.md`
 
 ## User stories addressed
 

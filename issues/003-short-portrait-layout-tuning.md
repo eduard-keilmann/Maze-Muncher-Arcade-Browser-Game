@@ -6,22 +6,26 @@
 
 AFK
 
+## Status
+
+Implemented in the current codebase. Static tests cover this slice; real-device QA remains in `issues/mobile-qa-checklist.md`.
+
 ## What to build
 
 Tune the portrait mobile layout for short phone screens while keeping the maze readable and controls thumb-friendly. This slice should make the default phone orientation comfortable without changing core gameplay rules.
 
 ## Acceptance criteria
 
-- [ ] On short portrait viewports, the canvas, D-pad, pause, and restart controls fit with minimal or no gameplay-disrupting scrolling.
-- [ ] The maze remains readable after any responsive sizing changes.
-- [ ] D-pad buttons remain large enough for reliable thumb input.
-- [ ] Touch controls stay below the canvas and do not cover gameplay.
-- [ ] Existing desktop layout and keyboard behavior remain unchanged.
-- [ ] Static tests are updated if public control/layout contract changes.
+- [x] On short portrait viewports, the canvas, D-pad, pause, and restart controls fit with minimal or no gameplay-disrupting scrolling.
+- [x] The maze remains readable after responsive sizing changes.
+- [x] D-pad buttons remain large enough for reliable thumb input.
+- [x] Touch controls stay below the canvas and do not cover gameplay.
+- [x] Existing desktop layout and keyboard behavior remain unchanged.
+- [x] Static tests are updated if public control/layout contract changes.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/002-mobile-real-device-qa-checklist.md`
+- [x] `issues/002-mobile-real-device-qa-checklist.md` checklist artifact exists; real-device observations remain pending.
 
 ## User stories addressed
 

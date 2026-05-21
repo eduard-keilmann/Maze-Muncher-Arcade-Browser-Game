@@ -6,22 +6,26 @@
 
 AFK
 
+## Status
+
+Implemented in the current codebase. Static tests cover this slice.
+
 ## What to build
 
 Add persistent visual feedback for the currently held D-pad direction. The player should be able to tell which direction is actively being held for turn buffering.
 
 ## Acceptance criteria
 
-- [ ] Pressing and holding a D-pad direction applies a visible active state for that button.
-- [ ] Active state remains visible for the full hold duration.
-- [ ] Active state clears on release, cancel, and pointer leave.
-- [ ] Hold-repeat direction behavior continues to work.
-- [ ] Mouse, stylus, and touch pointer paths stay consistent.
-- [ ] Static tests cover the public active-state contract.
+- [x] Pressing and holding a D-pad direction applies a visible active state for that button.
+- [x] Active state remains visible for the full hold duration.
+- [x] Active state clears on release, cancel, and pointer leave.
+- [x] Hold-repeat direction behavior continues to work.
+- [x] Mouse, stylus, and touch pointer paths stay consistent.
+- [x] Static tests cover the public active-state contract.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/001-fix-mobile-control-test-target.md`
+- [x] `issues/001-fix-mobile-control-test-target.md`
 
 ## User stories addressed
 

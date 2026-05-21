@@ -22,9 +22,9 @@ Implement Old-like scoring changes from the parent PRD. Old-like mode should use
 - [x] Maze Muncher mode keeps existing fruit and life behavior unless a shared bug fix is required.
 - [x] Static tests cover Old-like fruit values and the 10,000-point extra-life threshold.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/009-add-mode-aware-tuning-functions.md`
+- [x] `issues/009-add-mode-aware-tuning-functions.md`
 
 ## User stories addressed
 

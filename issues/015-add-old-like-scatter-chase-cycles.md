@@ -19,9 +19,9 @@ Implement Old-like scatter/chase timing from the parent PRD. Old-like mode shoul
 - [x] Maze Muncher mode keeps existing scatter/chase timing unless a shared bug fix is required.
 - [x] Static tests cover Old-like mode-cycle selection and frightened interruption expectations.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/009-add-mode-aware-tuning-functions.md`
+- [x] `issues/009-add-mode-aware-tuning-functions.md`
 
 ## User stories addressed
 

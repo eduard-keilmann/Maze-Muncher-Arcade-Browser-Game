@@ -21,9 +21,9 @@ Implement Old-like power-pellet behavior from the parent PRD. Power pellets shou
 - [x] Maze Muncher mode keeps its existing power-pellet behavior unless a shared bug fix is required.
 - [x] Static tests cover zero frightened time and edible-only-when-frightened behavior.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/009-add-mode-aware-tuning-functions.md`
+- [x] `issues/009-add-mode-aware-tuning-functions.md`
 
 ## User stories addressed
 

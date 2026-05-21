@@ -6,23 +6,27 @@
 
 HITL
 
+## Status
+
+Decision and landscape CSS are implemented. Real-device landscape observations remain pending in `issues/mobile-qa-checklist.md`.
+
 ## What to build
 
 Evaluate landscape phone play after baseline QA and portrait tuning. If landscape is cramped or clipped, implement the smallest landscape-specific layout that keeps the canvas readable and controls reachable.
 
 ## Acceptance criteria
 
-- [ ] Landscape behavior is tested on real or representative mobile viewports.
-- [ ] Decision is recorded: no landscape-specific layout needed, or landscape layout required.
-- [ ] If required, landscape layout keeps controls reachable without covering the canvas.
-- [ ] If required, landscape layout avoids gameplay-disrupting page scroll.
-- [ ] Portrait layout remains unchanged except where shared CSS improvements are intentional.
-- [ ] Static tests are updated if public layout/control contract changes.
+- [ ] Landscape behavior is tested on real mobile devices.
+- [x] Decision is recorded: no landscape-specific layout needed, or landscape layout required.
+- [x] If required, landscape layout keeps controls reachable without covering the canvas.
+- [x] If required, landscape layout avoids gameplay-disrupting page scroll.
+- [x] Portrait layout remains unchanged except where shared CSS improvements are intentional.
+- [x] Static tests are updated if public layout/control contract changes.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/002-mobile-real-device-qa-checklist.md`
-- Blocked by `issues/003-short-portrait-layout-tuning.md`
+- [x] `issues/002-mobile-real-device-qa-checklist.md` checklist artifact exists; real-device observations remain pending.
+- [x] `issues/003-short-portrait-layout-tuning.md`
 
 ## User stories addressed
 

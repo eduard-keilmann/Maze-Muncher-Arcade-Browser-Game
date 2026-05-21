@@ -21,9 +21,9 @@ Implement Old-like ghost house release behavior from the parent PRD. Ghosts shou
 - [x] Maze Muncher mode keeps existing ghost release behavior unless a shared bug fix is required.
 - [x] Static tests cover the release-spec contract and after-death threshold expectation.
 
-## Blocked by
+## Prerequisites
 
-- Blocked by `issues/009-add-mode-aware-tuning-functions.md`
+- [x] `issues/009-add-mode-aware-tuning-functions.md`
 
 ## User stories addressed
 

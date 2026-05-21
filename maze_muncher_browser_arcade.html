@@ -690,7 +690,7 @@
     let soundEnabled = readSoundEnabled();
     let musicEnabled = readMusicEnabled();
     const MASTER_VOLUME = 0.12;
-    const MUSIC_VOLUME = MASTER_VOLUME * 0.18;
+    const MUSIC_VOLUME = MASTER_VOLUME * 0.28;
     let audioContext = null;
     let audioPrimed = false;
     let pelletToneHigh = false;
@@ -854,6 +854,12 @@
       return 0.62 - threat * 0.32;
     }
 
+    function previewMusic() {
+      if (!musicEnabled) return;
+      playTone(147, 0, 0.055, MUSIC_VOLUME);
+      playTone(220, 0.08, 0.06, MUSIC_VOLUME * 0.8);
+    }
+
     function playMusicPulse(threat = computeThreatLevel()) {
       if (!musicEnabled) return;
       if (frightenedTimer > 0) {
@@ -893,6 +899,7 @@
       renderMusicMode();
       if (musicEnabled) {
         unlockAudio();
+        previewMusic();
         startMusicLoop();
       } else {
         stopMusicLoop();

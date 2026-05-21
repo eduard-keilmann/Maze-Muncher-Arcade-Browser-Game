@@ -178,6 +178,33 @@ class GameplayTuningTests(unittest.TestCase):
             "Normal ghost speed should use mode-aware tunnel multiplier",
         )
 
+
+
+    def test_ghosts_continue_horizontally_through_tunnel_sides(self):
+        assert_html_contains(self, r"function tunnelContinuationDirection\(actor\)", "tunnel continuation helper exists")
+        assert_html_contains(
+            self,
+            r"function tunnelContinuationDirection\(actor\)[\s\S]*?if \(!isTunnelSide\(actor\)\) return null;",
+            "tunnel continuation only applies in tunnel side lanes",
+        )
+        assert_html_contains(
+            self,
+            r"actor\.dir && actor\.dir\.dy === 0 && canMove\(actor, actor\.dir, \"ghost\"\)",
+            "ghost keeps existing horizontal tunnel direction when valid",
+        )
+        assert_html_contains(
+            self,
+            r"actor\.x < 0[\s\S]*?return DIRS\.right;[\s\S]*?actor\.x >= COLS \* TILE[\s\S]*?return DIRS\.left;",
+            "offscreen tunnel ghosts are pushed back toward the maze if direction was lost",
+        )
+
+        decision_body = find_function_body("handleDecisionPoint")
+        self.assertRegex(
+            decision_body,
+            re.compile(r"const tunnelDir = tunnelContinuationDirection\(actor\);[\s\S]*?if \(tunnelDir\) \{[\s\S]*?actor\.dir = tunnelDir;[\s\S]*?return;[\s\S]*?\}[\s\S]*?actor\.dir = chooseGhostDirection\(actor\);"),
+            "Ghosts should keep tunnel continuation before normal target selection",
+        )
+
     def test_old_like_red_cruise_elroy_adds_staged_speed_only_to_normal_red(self):
         assert_html_contains(self, r"OLD_LIKE_ELROY_STAGES\s*=\s*\[", "Old-like Cruise Elroy stage table")
         for remaining_pellets, speed_multiplier in [(20, 1.06), (10, 1.12)]:

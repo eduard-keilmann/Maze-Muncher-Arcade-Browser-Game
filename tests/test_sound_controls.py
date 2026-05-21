@@ -47,7 +47,7 @@ class SoundControlsTests(unittest.TestCase):
             assert_html_contains(self, re.escape(call), description)
 
     def test_sound_toggle_gives_audible_preview_when_turning_sound_on(self):
-        assert_html_contains(self, r"const MASTER_VOLUME = 0\.12;", "sound effects are loud enough to hear on phones")
+        assert_html_contains(self, r"const MASTER_VOLUME = 0\.0336;", "sound effects use the previous quiet threat-music volume")
         assert_html_contains(self, r"function previewSound\(\)", "sound preview helper exists")
         assert_html_contains(
             self,
@@ -70,7 +70,7 @@ class SoundControlsTests(unittest.TestCase):
         assert_html_contains(self, r"musicLabel\.textContent\s*=\s*musicEnabled \? \"MUSIC: ON\" : \"MUSIC: OFF\"", "music label updates")
 
     def test_music_uses_generated_web_audio_and_separate_quiet_volume(self):
-        assert_html_contains(self, r"const MUSIC_VOLUME = MASTER_VOLUME \* 0\.28;", "music is quiet but audible under effects")
+        assert_html_contains(self, r"const MUSIC_VOLUME = 0\.078;", "threat music matches the previous normal pellet tick volume")
         assert_html_contains(self, r"function playMusicPulse\(", "generated music pulse helper exists")
         assert_html_contains(self, r"function previewMusic\(\)", "music preview helper exists")
         assert_html_contains(self, r"playTone\([^\n]+MUSIC_VOLUME", "music uses generated tones")

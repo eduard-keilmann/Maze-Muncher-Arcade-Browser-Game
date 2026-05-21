@@ -131,6 +131,7 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'grid-template-rows:\s*repeat\(3,\s*var\(--touch-height\)\)', "D-pad grid keeps centered row height")
         assert_html_contains(self, r'width:\s*var\(--touch-width\);[\s\S]*?height:\s*var\(--touch-height\);', "side D-pad buttons keep rectangular dimensions")
         assert_html_contains(self, r'\.dpad-up,\s*\.dpad-down\s*\{[^}]*width:\s*var\(--touch-vertical-width\);', "up and down D-pad buttons use centered vertical width")
+        assert_html_contains(self, r'\.dpad-up,\s*\.dpad-down\s*\{[^}]*justify-self:\s*center;', "wider up and down buttons stay symmetric around the center column")
         assert_html_contains(self, r'Saved square D-pad layout:[^\n]*--touch-width and --touch-vertical-width to var\(--touch-square-size\)[^\n]*--touch-wing-offset:\s*0px', "old square D-pad layout is documented for easy rollback")
         assert_html_contains(self, r'\.dpad-left\s*\{[^}]*--touch-button-offset:\s*calc\(-1 \* var\(--touch-wing-offset\)\);', "left D-pad button shifts slightly outward")
         assert_html_contains(self, r'\.dpad-right\s*\{[^}]*--touch-button-offset:\s*var\(--touch-wing-offset\);', "right D-pad button shifts slightly outward")

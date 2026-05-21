@@ -348,6 +348,9 @@
       <button class="mode-button" type="button" data-action="sound" aria-label="Sound" aria-pressed="true">
         <span data-sound-label>SOUND: ON</span>
       </button>
+      <button class="mode-button" type="button" data-action="music" aria-label="Music" aria-pressed="true">
+        <span data-music-label>MUSIC: ON</span>
+      </button>
     </section>
     <div class="frame">
       <canvas id="game" width="560" height="712" aria-label="Maze chase arcade game canvas"></canvas>
@@ -393,6 +396,8 @@
     const modeLabel = document.querySelector("[data-mode-label]");
     const soundButton = document.querySelector('[data-action="sound"]');
     const soundLabel = document.querySelector("[data-sound-label]");
+    const musicButton = document.querySelector('[data-action="music"]');
+    const musicLabel = document.querySelector("[data-music-label]");
 
     const TILE = 20;
     const COLS = 28;
@@ -408,6 +413,7 @@
 
     const GAMEPLAY_MODE_STORAGE_KEY = "mazeMuncherGameplayMode";
     const SOUND_STORAGE_KEY = "mazeMuncherSoundEnabled";
+    const MUSIC_STORAGE_KEY = "mazeMuncherMusicEnabled";
     const DEFAULT_GAMEPLAY_MODE_ID = "old-like";
     const GAMEPLAY_MODES = [
       { id: "maze-muncher", label: "MODE: MAZE MUNCHER", footerLabel: "MAZE MUNCHER MODE", highScoreKey: "mazeMuncherHighScore" },
@@ -677,11 +683,19 @@
       try { return localStorage.getItem(SOUND_STORAGE_KEY) !== "false"; } catch (_) { return true; }
     }
 
+    function readMusicEnabled() {
+      try { return localStorage.getItem(MUSIC_STORAGE_KEY) !== "false"; } catch (_) { return true; }
+    }
+
     let soundEnabled = readSoundEnabled();
+    let musicEnabled = readMusicEnabled();
     const MASTER_VOLUME = 0.12;
+    const MUSIC_VOLUME = MASTER_VOLUME * 0.18;
     let audioContext = null;
     let audioPrimed = false;
     let pelletToneHigh = false;
+    let musicTimer = 0;
+    let musicPulseIndex = 0;
 
     function createAudioContext() {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -690,7 +704,7 @@
     }
 
     function getAudioContext() {
-      if (!soundEnabled) return null;
+      if (!soundEnabled && !musicEnabled) return null;
       if (!audioContext) audioContext = createAudioContext();
       return audioContext;
     }
@@ -739,14 +753,17 @@
     }
 
     function playStartSound() {
+      if (!soundEnabled) return;
       playSequence([[392, 0, 0.07], [523, 0.08, 0.07], [659, 0.16, 0.08], [784, 0.25, 0.12]], MASTER_VOLUME * 0.8);
     }
 
     function previewSound() {
+      if (!soundEnabled) return;
       playSequence([[659, 0, 0.08], [988, 0.1, 0.12]], MASTER_VOLUME);
     }
 
     function playPelletSound(cell) {
+      if (!soundEnabled) return;
       if (cell === "o") {
         playSequence([[247, 0, 0.05], [330, 0.06, 0.06], [494, 0.13, 0.08]], MASTER_VOLUME * 0.9);
         return;
@@ -756,18 +773,22 @@
     }
 
     function playFruitSound() {
+      if (!soundEnabled) return;
       playSequence([[523, 0, 0.05], [784, 0.06, 0.06], [1047, 0.13, 0.08]], MASTER_VOLUME * 0.9);
     }
 
     function playGhostEatenSound() {
+      if (!soundEnabled) return;
       playSequence([[330, 0, 0.06], [494, 0.07, 0.08], [660, 0.16, 0.1]], MASTER_VOLUME);
     }
 
     function playDeathSound() {
+      if (!soundEnabled) return;
       playSequence([[392, 0, 0.09], [330, 0.1, 0.09], [262, 0.2, 0.12], [196, 0.34, 0.18]], MASTER_VOLUME);
     }
 
     function playLevelClearSound() {
+      if (!soundEnabled) return;
       playSequence([[523, 0, 0.07], [659, 0.08, 0.07], [784, 0.16, 0.07], [1047, 0.26, 0.16]], MASTER_VOLUME * 0.9);
     }
 
@@ -788,6 +809,93 @@
       if (soundEnabled) {
         unlockAudio();
         previewSound();
+      }
+    }
+
+    function saveMusicPreference() {
+      try { localStorage.setItem(MUSIC_STORAGE_KEY, String(musicEnabled)); } catch (_) {}
+    }
+
+    function renderMusicMode() {
+      if (!musicLabel || !musicButton) return;
+      musicLabel.textContent = musicEnabled ? "MUSIC: ON" : "MUSIC: OFF";
+      musicButton.setAttribute("aria-pressed", String(musicEnabled));
+    }
+
+    function shouldMusicPlay() {
+      return musicEnabled && state === "playing" && !paused;
+    }
+
+    function computeThreatLevel() {
+      if (!player || !ghosts) return 0;
+      let threat = 0;
+      const dangerousGhosts = ghosts.filter(g => g.state !== "eaten" && g.state !== "home" && !(frightenedTimer > 0 && g.state === "normal"));
+      for (const g of dangerousGhosts) {
+        const tileDistance = Math.hypot(player.x - g.x, player.y - g.y) / TILE;
+        threat = Math.max(threat, 1 - Math.min(tileDistance, 9) / 9);
+      }
+
+      if (frightenedTimer > 0) {
+        threat = Math.max(threat, 1 - Math.min(1, frightenedTimer / 2));
+      }
+
+      const pelletPressure = 1 - Math.min(1, pelletsRemaining / 60);
+      threat = Math.max(threat, pelletPressure * 0.45);
+
+      const modeCycle = modeCycleFor(activeGameplayMode, level);
+      if (modeCycle[modeIndex].mode === "chase") threat += 0.18;
+      if (oldLikeElroyStage()) threat += 0.16;
+
+      return Math.max(0, Math.min(1, threat));
+    }
+
+    function musicPulseInterval(threat) {
+      if (frightenedTimer > 0) return frightenedTimer < 2 ? 0.22 : 0.34;
+      return 0.62 - threat * 0.32;
+    }
+
+    function playMusicPulse(threat = computeThreatLevel()) {
+      if (!musicEnabled) return;
+      if (frightenedTimer > 0) {
+        const frequency = musicPulseIndex % 2 === 0 ? 196 : 247;
+        playTone(frequency, 0, 0.045, MUSIC_VOLUME * 0.75);
+      } else {
+        const base = threat > 0.65 ? 165 : threat > 0.35 ? 147 : 123;
+        playTone(musicPulseIndex % 2 === 0 ? base : base * 1.25, 0, 0.04, MUSIC_VOLUME);
+        if (threat > 0.72) playTone(base * 1.5, 0.055, 0.03, MUSIC_VOLUME * 0.72);
+      }
+      musicPulseIndex++;
+    }
+
+    function startMusicLoop() {
+      musicTimer = 0;
+    }
+
+    function stopMusicLoop() {
+      musicTimer = 0;
+    }
+
+    function updateMusicLoop(dt) {
+      if (!shouldMusicPlay()) {
+        stopMusicLoop();
+        return;
+      }
+      musicTimer -= dt;
+      if (musicTimer > 0) return;
+      const threat = computeThreatLevel();
+      playMusicPulse(threat);
+      musicTimer = musicPulseInterval(threat);
+    }
+
+    function toggleMusic() {
+      musicEnabled = !musicEnabled;
+      saveMusicPreference();
+      renderMusicMode();
+      if (musicEnabled) {
+        unlockAudio();
+        startMusicLoop();
+      } else {
+        stopMusicLoop();
       }
     }
 
@@ -1354,6 +1462,7 @@
     function update(dt) {
       dt = Math.min(dt, 1 / 20);
       updateMessages(dt);
+      updateMusicLoop(dt);
 
       if (state === "title" || state === "gameover" || paused) return;
 
@@ -1804,6 +1913,14 @@
       });
     }
 
+    if (musicButton) {
+      musicButton.addEventListener("click", event => {
+        event.preventDefault();
+        unlockAudio();
+        toggleMusic();
+      });
+    }
+
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
       const dir = key === "arrowleft" || key === "a" ? DIRS.left
@@ -1908,6 +2025,7 @@
     resetActors();
     renderGameplayMode();
     renderSoundMode();
+    renderMusicMode();
     requestAnimationFrame(gameLoop);
   })();
   </script>

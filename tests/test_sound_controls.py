@@ -60,6 +60,38 @@ class SoundControlsTests(unittest.TestCase):
             "turning sound on plays immediate preview",
         )
 
+
+    def test_page_exposes_persistent_music_toggle(self):
+        assert_html_contains(self, r"data-action=\"music\"", "music action button")
+        assert_html_contains(self, r"aria-label=\"Music\"", "accessible music control")
+        assert_html_contains(self, r"MUSIC_STORAGE_KEY\s*=\s*\"mazeMuncherMusicEnabled\"", "music preference storage key")
+        assert_html_contains(self, r"localStorage\.getItem\(MUSIC_STORAGE_KEY\)", "music preference restored")
+        assert_html_contains(self, r"localStorage\.setItem\(MUSIC_STORAGE_KEY,\s*String\(musicEnabled\)\)", "music preference saved")
+        assert_html_contains(self, r"musicLabel\.textContent\s*=\s*musicEnabled \? \"MUSIC: ON\" : \"MUSIC: OFF\"", "music label updates")
+
+    def test_music_uses_generated_web_audio_and_separate_quiet_volume(self):
+        assert_html_contains(self, r"const MUSIC_VOLUME = MASTER_VOLUME \* 0\.18;", "music is quieter than effects")
+        assert_html_contains(self, r"function playMusicPulse\(", "generated music pulse helper exists")
+        assert_html_contains(self, r"playTone\([^\n]+MUSIC_VOLUME", "music uses generated tones")
+        assert_html_contains(self, r"function startMusicLoop\(\)", "music loop start helper exists")
+        assert_html_contains(self, r"function stopMusicLoop\(\)", "music loop stop helper exists")
+        self.assertNotRegex(HTML, re.compile(r"\.(mp3|wav|ogg|m4a)"), "Music must not add audio assets")
+
+    def test_music_loop_is_state_gated_and_updated_from_game_loop(self):
+        assert_html_contains(self, r"function shouldMusicPlay\(\)[\s\S]*?state === \"playing\"[\s\S]*?!paused", "music only plays during active gameplay")
+        assert_html_contains(self, r"function update\(dt\)[\s\S]*?updateMusicLoop\(dt\);", "game loop updates music")
+        assert_html_contains(self, r"function updateMusicLoop\(dt\)[\s\S]*?if \(!shouldMusicPlay\(\)\) \{[\s\S]*?stopMusicLoop\(\);[\s\S]*?return;[\s\S]*?\}", "music stops outside playing state")
+        assert_html_contains(self, r"function toggleMusic\(\)[\s\S]*?if \(musicEnabled\) \{[\s\S]*?unlockAudio\(\);[\s\S]*?startMusicLoop\(\);[\s\S]*?\} else \{[\s\S]*?stopMusicLoop\(\);", "music toggle starts and stops loop")
+
+    def test_music_threat_formula_uses_gameplay_danger_inputs(self):
+        assert_html_contains(self, r"function computeThreatLevel\(\)[\s\S]*?ghosts[\s\S]*?g\.state !== \"eaten\"[\s\S]*?g\.state !== \"home\"", "threat ignores inactive ghosts")
+        assert_html_contains(self, r"function computeThreatLevel\(\)[\s\S]*?frightenedTimer > 0[\s\S]*?Math\.min\(1, frightenedTimer / 2\)", "frightened ending raises tension")
+        assert_html_contains(self, r"function computeThreatLevel\(\)[\s\S]*?pelletsRemaining[\s\S]*?modeCycle\[modeIndex\]\.mode === \"chase\"", "pellets and chase mode affect threat")
+        assert_html_contains(self, r"Math\.max\(0, Math\.min\(1, threat\)\)", "threat is clamped")
+
+    def test_music_control_unlocks_audio_for_iphone(self):
+        assert_html_contains(self, r"musicButton\.addEventListener\(\"click\"[\s\S]*?unlockAudio\(\);", "music button unlocks audio")
+
     def test_ios_touchend_and_click_prime_audio_output(self):
         assert_html_contains(self, r"let audioPrimed = false;", "audio prime state exists")
         assert_html_contains(self, r"function primeAudioOutput\(\)", "audio output prime helper exists")

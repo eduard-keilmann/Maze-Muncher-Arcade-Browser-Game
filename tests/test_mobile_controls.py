@@ -123,7 +123,7 @@ class MobileControlsTests(unittest.TestCase):
     def test_mobile_help_text_sits_below_dpad_with_original_kbd_style(self):
         assert_html_contains(
             self,
-            r'<div class="dpad"[\s\S]*?</div>\s*<p class="help touch-help">\s*Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, swipe, or the touch D-pad\. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart\.\s*</p>\s*<div class="touch-actions">',
+            r'<div class="dpad"[\s\S]*?</div>\s*<p class="help touch-help">\s*Move with <kbd>Arrow Keys</kbd>, <kbd>WASD</kbd>, continuous swipe, or the touch D-pad\. Press <kbd>Space</kbd> to pause/resume, <kbd>Enter</kbd> to start/restart\.\s*</p>\s*<div class="touch-actions">',
             "mobile help text appears directly below the D-pad with the original sentence and kbd style",
         )
         assert_html_contains(self, r'class="help desktop-help"', "desktop keyboard help remains available")

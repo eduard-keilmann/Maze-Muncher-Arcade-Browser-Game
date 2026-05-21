@@ -39,7 +39,7 @@ Desktop:
 
 Touch/mobile:
 
-- Move: swipe on the canvas or use the on-screen D-pad
+- Move: use continuous swipe anywhere on the game page or use the on-screen D-pad
 - Hold a D-pad direction to keep that turn queued
 - Pause: tap Pause
 - Restart: hold Restart

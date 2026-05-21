@@ -15,6 +15,7 @@
       --mobile-gap: 10px;
       --touch-square-size: 72px;
       --touch-width: 100px;
+      --touch-vertical-width: 144px;
       --touch-height: var(--touch-square-size);
       --touch-gap: 10px;
       --touch-wing-offset: 6px;
@@ -142,7 +143,7 @@
       align-items: center;
     }
 
-    /* Saved square D-pad layout: set --touch-width: var(--touch-square-size) and --touch-wing-offset: 0px. */
+    /* Saved square D-pad layout: set --touch-width and --touch-vertical-width to var(--touch-square-size), then set --touch-wing-offset: 0px. */
 
     .touch-button,
     .dpad-spacer {
@@ -193,6 +194,11 @@
     .dpad-left { grid-column: 1; grid-row: 2; --touch-button-offset: calc(-1 * var(--touch-wing-offset)); }
     .dpad-right { grid-column: 3; grid-row: 2; --touch-button-offset: var(--touch-wing-offset); }
     .dpad-down { grid-column: 2; grid-row: 3; }
+
+    .dpad-up,
+    .dpad-down {
+      width: var(--touch-vertical-width);
+    }
 
     .touch-actions {
       display: flex;
@@ -257,6 +263,7 @@
         --mobile-gap: 6px;
         --touch-square-size: 64px;
         --touch-width: 88px;
+        --touch-vertical-width: 124px;
         --touch-height: var(--touch-square-size);
         --touch-gap: 7px;
         --touch-wing-offset: 5px;
@@ -296,6 +303,7 @@
         --mobile-gap: 8px;
         --touch-square-size: 60px;
         --touch-width: 80px;
+        --touch-vertical-width: 116px;
         --touch-height: var(--touch-square-size);
         --touch-gap: 7px;
         --touch-wing-offset: 5px;

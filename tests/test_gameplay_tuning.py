@@ -205,7 +205,7 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(
             self,
             r"function tunnelContinuationDirection\(actor\)[\s\S]*?if \(!isTunnelContinuationZone\(actor\)\) return null;",
-            "tunnel continuation only applies in tunnel side lanes and mouth junctions",
+            "tunnel continuation only applies in tunnel side lanes after entry",
         )
         assert_html_contains(
             self,
@@ -347,6 +347,59 @@ class GameplayTuningTests(unittest.TestCase):
             re.compile(r'currentMode === "scatter"[\s\S]*?oldLikeElroyStage\(g\)[\s\S]*?return g\.scatter'),
             "Non-Elroy ghosts and inactive Elroy red should keep scatter target",
         )
+
+    def test_ghost_personality_targeting_uses_tile_coordinates(self):
+        assert_html_contains(self, r"function actorTile\(actor\)", "shared actor tile-coordinate helper")
+
+        target_body = find_function_body("targetForGhost")
+        self.assertRegex(
+            target_body,
+            re.compile(r'g\.state === "leaving"[\s\S]*?return \{ x: 13, y: 11 \}'),
+            "Leaving ghosts should target the door tile, not a half-tile center",
+        )
+        self.assertRegex(
+            target_body,
+            re.compile(r'g\.state === "eaten"[\s\S]*?return \{ x: 13, y: 14 \}'),
+            "Eaten ghosts should target the home tile, not a half-tile center",
+        )
+        self.assertNotRegex(
+            target_body,
+            re.compile(r'13\.5|14\.5|11\.5'),
+            "Ghost target tiles should not mix half-tile centers into direction decisions",
+        )
+        self.assertRegex(
+            target_body,
+            re.compile(r'if \(g\.name === "red"\) return \{ x: p\.x, y: p\.y \};'),
+            "Red should target Maze Muncher tile directly in chase",
+        )
+        self.assertRegex(
+            target_body,
+            re.compile(r'if \(g\.name === "pink"\)[\s\S]*?dirAheadTiles\(pDir, 4\)'),
+            "Pink should target four tiles ahead of Maze Muncher",
+        )
+        self.assertRegex(
+            target_body,
+            re.compile(r'const redTile = actorTile\(red\);[\s\S]*?ahead\.x \* 2 - redTile\.x[\s\S]*?ahead\.y \* 2 - redTile\.y'),
+            "Cyan should use red ghost tile for the two-ahead vector target",
+        )
+        self.assertRegex(
+            target_body,
+            re.compile(r'const ghostTile = actorTile\(g\);[\s\S]*?ghostTile\.x - p\.x[\s\S]*?ghostTile\.y - p\.y'),
+            "Orange distance decision should use ghost tile coordinates",
+        )
+
+        choose_body = find_function_body("chooseGhostDirection")
+        self.assertRegex(
+            choose_body,
+            re.compile(r"const nextX = Math\.floor\(g\.x / TILE\) \+ dir\.dx;[\s\S]*?const nextY = Math\.floor\(g\.y / TILE\) \+ dir\.dy;"),
+            "Ghost path choice should compare next tile coordinates to target tile coordinates",
+        )
+        self.assertNotRegex(
+            choose_body,
+            re.compile(r"\+ 0\.5"),
+            "Ghost path choice should not mix half-tile centers with target tiles",
+        )
+
 
     def test_old_like_ghost_release_uses_pellet_thresholds_with_timer_fallback(self):
         assert_html_contains(self, r"OLD_LIKE_GHOST_RELEASE\s*=\s*\{", "Old-like ghost release spec")

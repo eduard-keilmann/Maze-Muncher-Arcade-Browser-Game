@@ -1290,9 +1290,13 @@
       }
     }
 
+    function actorTile(actor) {
+      const tile = tileAt(actor.x, actor.y);
+      return { x: tile.c, y: tile.r };
+    }
+
     function playerTile() {
-      const p = tileAt(player.x, player.y);
-      return { x: p.c, y: p.r };
+      return actorTile(player);
     }
 
     function dirAheadTiles(dir, amount) {
@@ -1301,8 +1305,8 @@
     }
 
     function targetForGhost(g) {
-      if (g.state === "leaving") return { x: 13.5, y: 11.5 };
-      if (g.state === "eaten") return { x: 13.5, y: 14.5 };
+      if (g.state === "leaving") return { x: 13, y: 11 };
+      if (g.state === "eaten") return { x: 13, y: 14 };
 
       const pDir = player.dir || player.lastDir || DIRS.left;
       const p = playerTile();
@@ -1323,12 +1327,14 @@
 
       if (g.name === "cyan") {
         const red = ghosts.find(ghost => ghost.name === "red");
+        const redTile = actorTile(red);
         const ahead = dirAheadTiles(pDir, 2);
-        return { x: ahead.x * 2 - red.x / TILE, y: ahead.y * 2 - red.y / TILE };
+        return { x: ahead.x * 2 - redTile.x, y: ahead.y * 2 - redTile.y };
       }
 
-      const dx = g.x / TILE - p.x;
-      const dy = g.y / TILE - p.y;
+      const ghostTile = actorTile(g);
+      const dx = ghostTile.x - p.x;
+      const dy = ghostTile.y - p.y;
       const distanceTiles = Math.hypot(dx, dy);
       return distanceTiles > 8 ? { x: p.x, y: p.y } : g.scatter;
     }
@@ -1363,8 +1369,8 @@
       let bestDistance = Infinity;
 
       for (const dir of choices) {
-        const nextX = Math.floor(g.x / TILE) + dir.dx + 0.5;
-        const nextY = Math.floor(g.y / TILE) + dir.dy + 0.5;
+        const nextX = Math.floor(g.x / TILE) + dir.dx;
+        const nextY = Math.floor(g.y / TILE) + dir.dy;
         const d = (nextX - target.x) ** 2 + (nextY - target.y) ** 2;
         if (d < bestDistance) {
           bestDistance = d;

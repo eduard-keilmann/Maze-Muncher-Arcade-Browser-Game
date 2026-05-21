@@ -25,7 +25,7 @@ The game runs directly in a modern browser.
 - Smooth grid movement with buffered turns.
 - Four ghosts with chase, scatter, frightened, home, and eaten states.
 - Power pellets let you hunt the ghosts for combo points.
-- Score, high score, lives, levels, pause, ready, death, and game-over states.
+- Score, high score, lives, levels, pause, ready, death, game-over states, and generated arcade-style sound effects.
 - Works on desktop and touch screens.
 
 ## Controls
@@ -35,6 +35,7 @@ Desktop:
 - Move: Arrow keys or WASD
 - Start: Space, Enter, or a movement key
 - Pause/resume: Space or P
+- Sound: use SOUND: ON/OFF toggle
 - Restart from title/game-over: Enter
 
 Touch/mobile:
@@ -43,6 +44,7 @@ Touch/mobile:
 - Hold a D-pad direction to keep that turn queued
 - Pause: tap Pause
 - Restart: hold Restart
+- Sound: use SOUND: ON/OFF toggle
 
 ## Mobile-Friendly
 

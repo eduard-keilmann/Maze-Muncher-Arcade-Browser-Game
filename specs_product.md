@@ -13,7 +13,7 @@ The game should run from a static HTML file with no build step and no required s
 - Pellets add score. Power pellets add score, trigger frightened ghosts, and allow ghost-eating score chains.
 - Ghosts use deterministic maze movement with chase, scatter, home, leaving, frightened, and eaten states.
 - Level clears when all pellets are eaten.
-- Player has lives, score, high score, level display, ready/death/game-over/pause overlays.
+- Player has lives, score, high score, level display, ready/death/game-over/pause overlays, and generated arcade-style sound effects.
 
 ## Supported Inputs
 
@@ -22,12 +22,14 @@ The game should run from a static HTML file with no build step and no required s
   - Space starts or pauses/resumes.
   - Enter starts/restarts from title or game-over.
   - P pauses/resumes.
+  - Sound toggle enables/disables generated arcade-style effects.
 - Touch/mobile:
   - Canvas swipe changes direction.
   - On-screen D-pad changes direction.
   - Press-and-hold D-pad repeats the selected direction so queued turns remain responsive.
   - Touch pause button starts from title/game-over or pauses/resumes during active play.
   - Touch restart button starts a fresh game.
+  - Sound toggle works on desktop and touch, with preference saved locally.
 
 ## Mobile Experience Goals
 
@@ -44,6 +46,7 @@ The game should run from a static HTML file with no build step and no required s
 - Press-and-hold directional behavior.
 - Pause and restart touch buttons.
 - Mobile media query for tighter spacing and visible controls on coarse pointers/small screens.
+- Generated Web Audio effects for start, pellets, power pellets, fruit, ghost-eaten, death, and level clear.
 
 ## Remaining Mobile Improvement Candidates
 

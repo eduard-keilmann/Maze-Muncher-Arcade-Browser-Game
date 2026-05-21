@@ -210,6 +210,33 @@ class GameplayTuningTests(unittest.TestCase):
             "Ghosts should keep tunnel continuation before normal target selection",
         )
 
+    def test_ghosts_do_not_enter_hidden_tunnel_dead_ends(self):
+        assert_html_contains(
+            self,
+            r"function tunnelDeadEndEscapeDirection\(actor\)[\s\S]*?c > 6[\s\S]*?c <= 9[\s\S]*?DIRS\.left[\s\S]*?c >= COLS - 10[\s\S]*?c < COLS - 7[\s\S]*?DIRS\.right",
+            "ghosts already in hidden tunnel mouth dead ends are pushed back to the real mouth",
+        )
+        assert_html_contains(
+            self,
+            r"function isTunnelMouthDeadEndDirection\(actor, dir\)[\s\S]*?c === 6[\s\S]*?dir\.name === \"right\"[\s\S]*?c === COLS - 7[\s\S]*?dir\.name === \"left\"",
+            "ghosts must not choose the hidden dead-end direction from tunnel mouths",
+        )
+
+        decision_body = find_function_body("handleDecisionPoint")
+        self.assertRegex(
+            decision_body,
+            re.compile(r"const deadEndDir = tunnelDeadEndEscapeDirection\(actor\);[\s\S]*?if \(deadEndDir\) \{[\s\S]*?actor\.dir = deadEndDir;[\s\S]*?return;"),
+            "Ghosts in hidden tunnel dead ends should be corrected before target selection",
+        )
+
+        available_body = find_function_body("availableDirections")
+        self.assertRegex(
+            available_body,
+            re.compile(r"DIR_ORDER\.filter\(dir => canMove\(g, dir, \"ghost\"\) && !isTunnelMouthDeadEndDirection\(g, dir\)\)"),
+            "Ghost direction choices should exclude hidden tunnel dead ends",
+        )
+
+
     def test_old_like_red_cruise_elroy_adds_staged_speed_only_to_normal_red(self):
         assert_html_contains(self, r"OLD_LIKE_ELROY_STAGES\s*=\s*\[", "Old-like Cruise Elroy stage table")
         for remaining_pellets, speed_multiplier in [(20, 1.06), (10, 1.12)]:

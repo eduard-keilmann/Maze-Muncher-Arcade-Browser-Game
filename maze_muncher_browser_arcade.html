@@ -1161,14 +1161,41 @@
       return r === TUNNEL_ROW && (c <= 6 || c >= COLS - 7);
     }
 
+    function tunnelDeadEndEscapeDirection(actor) {
+      const { c, r } = tileAt(actor.x, actor.y);
+      if (r !== TUNNEL_ROW) return null;
+      if (c > 6 && c <= 9 && canMove(actor, DIRS.left, "ghost")) return DIRS.left;
+      if (c >= COLS - 10 && c < COLS - 7 && canMove(actor, DIRS.right, "ghost")) return DIRS.right;
+      return null;
+    }
+
+    function isTunnelMouthDeadEndDirection(actor, dir) {
+      if (!dir) return false;
+      const { c, r } = tileAt(actor.x, actor.y);
+      if (r !== TUNNEL_ROW) return false;
+      return (c === 6 && dir.name === "right") ||
+             (c === COLS - 7 && dir.name === "left");
+    }
+
     function tunnelContinuationDirection(actor) {
       if (!isTunnelContinuationZone(actor)) return null;
+      const { c } = tileAt(actor.x, actor.y);
+
+      if (c === 6) {
+        if (actor.dir && actor.dir.name === "right") return null;
+        return canMove(actor, DIRS.left, "ghost") ? DIRS.left : null;
+      }
+      if (c === COLS - 7) {
+        if (actor.dir && actor.dir.name === "left") return null;
+        return canMove(actor, DIRS.right, "ghost") ? DIRS.right : null;
+      }
+
       if (actor.dir && actor.dir.dy === 0 && canMove(actor, actor.dir, "ghost")) return actor.dir;
       if (actor.lastDir && actor.lastDir.dy === 0 && canMove(actor, actor.lastDir, "ghost")) return actor.lastDir;
       if (actor.x < 0 && canMove(actor, DIRS.right, "ghost")) return DIRS.right;
       if (actor.x >= COLS * TILE && canMove(actor, DIRS.left, "ghost")) return DIRS.left;
-      if (actor.x < COLS * TILE / 2 && canMove(actor, DIRS.left, "ghost")) return DIRS.left;
-      if (canMove(actor, DIRS.right, "ghost")) return DIRS.right;
+      if (c < 6 && canMove(actor, DIRS.right, "ghost")) return DIRS.right;
+      if (canMove(actor, DIRS.left, "ghost")) return DIRS.left;
       return null;
     }
 
@@ -1206,6 +1233,12 @@
           actor.dir = null;
         }
       } else {
+        const deadEndDir = tunnelDeadEndEscapeDirection(actor);
+        if (deadEndDir) {
+          actor.dir = deadEndDir;
+          return;
+        }
+
         const tunnelDir = tunnelContinuationDirection(actor);
         if (tunnelDir) {
           actor.dir = tunnelDir;
@@ -1297,7 +1330,7 @@
     }
 
     function availableDirections(g) {
-      let choices = DIR_ORDER.filter(dir => canMove(g, dir, "ghost"));
+      let choices = DIR_ORDER.filter(dir => canMove(g, dir, "ghost") && !isTunnelMouthDeadEndDirection(g, dir));
       const reverse = opposite(g.dir);
       if (choices.length > 1 && reverse) {
         const noReverse = choices.filter(dir => dir.name !== reverse.name);

@@ -206,6 +206,37 @@ class MobileControlsTests(unittest.TestCase):
             "accepted swipe resets anchor for continuous steering",
         )
 
+    def test_canvas_tap_steers_relative_to_player_without_breaking_swipe(self):
+        assert_html_contains(self, r'function directionFromCanvasTap\(event\)', "canvas tap helper exists")
+        assert_html_contains(
+            self,
+            r'const rect = canvas\.getBoundingClientRect\(\);[\s\S]*?const tapX = \(event\.clientX - rect\.left\) \* \(canvas\.width / rect\.width\);[\s\S]*?const tapY = \(event\.clientY - rect\.top\) \* \(canvas\.height / rect\.height\);',
+            "tap converts page coordinates into canvas coordinates",
+        )
+        assert_html_contains(
+            self,
+            r'const dx = tapX - player\.x;[\s\S]*?const dy = tapY - \(HUD \+ player\.y\);',
+            "tap direction is relative to Maze Muncher position",
+        )
+        assert_html_contains(
+            self,
+            r'if \(Math\.abs\(dx\) > Math\.abs\(dy\)\) return dx < 0 \? DIRS\.left : DIRS\.right;[\s\S]*?return dy < 0 \? DIRS\.up : DIRS\.down;',
+            "larger tap delta chooses horizontal or vertical direction",
+        )
+        assert_html_contains(self, r'moved:\s*false,', "pointer starts as possible tap")
+        assert_html_contains(self, r'touchStart\.moved = true;', "movement past threshold stops tap handling")
+        assert_html_contains(
+            self,
+            r'if \(touchStart\.target === canvas && !touchStart\.moved\) \{[\s\S]*?applyPageSwipeDirection\(directionFromCanvasTap\(event\)\);[\s\S]*?touchStart = null;',
+            "short canvas tap applies relative direction on release",
+        )
+        assert_html_contains(
+            self,
+            r'function applyPageSwipeDirection\(direction\)[\s\S]*?newGame\(\);[\s\S]*?setDirection\(direction\);',
+            "tap uses same title/gameover start-before-steer path",
+        )
+
+
 
 if __name__ == "__main__":
     unittest.main()

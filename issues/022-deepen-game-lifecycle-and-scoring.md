@@ -19,14 +19,14 @@ Architecture target:
 
 ## Acceptance criteria
 
-- [ ] New game, start level, death reset, level clear, and game over behavior remain unchanged.
-- [ ] Score additions still update high score where appropriate.
-- [ ] Old-like extra life still triggers once when crossing 10,000 points.
-- [ ] Fruit and ghost score messages still appear.
-- [ ] Death reset preserves current board pellet progress.
-- [ ] Static tests cover lifecycle and scoring through the deepened interface where practical.
-- [ ] Full test suite passes.
+- [x] New game, start level, death reset, level clear, and game over behavior remain unchanged.
+- [x] Score additions still update high score where appropriate.
+- [x] Old-like extra life still triggers once when crossing 10,000 points.
+- [x] Fruit and ghost score messages still appear.
+- [x] Death reset preserves current board pellet progress.
+- [x] Static tests cover lifecycle and scoring through the deepened interface where practical.
+- [x] Full test suite passes.
 
 ## Blocked by
 
-None - can start immediately
+Done

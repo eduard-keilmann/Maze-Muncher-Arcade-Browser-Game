@@ -1184,6 +1184,101 @@
       }
     };
 
+    const gameLifecycle = {
+      startLevel() {
+        grid = cloneMap();
+        pelletsRemaining = countPellets();
+        pelletsEaten = 0;
+        fruitMarks = new Set();
+        fruit = null;
+        resetActors();
+        readyTimer = 1.4;
+        state = "ready";
+        paused = false;
+        messages = [{ text: `LEVEL ${level}`, x: W / 2, y: HUD + 18.5 * TILE, time: 1.1, life: 1.1, size: 22 }];
+      },
+
+      startNewGame() {
+        playStartSound();
+        score = 0;
+        level = 1;
+        lives = 3;
+        extraLifeAwarded = false;
+        this.startLevel();
+      },
+
+      setHighScore() {
+        if (score > highScore) {
+          highScore = score;
+          try { localStorage.setItem(activeGameplayMode.highScoreKey, String(highScore)); } catch (_) {}
+        }
+      },
+
+      awardScore(points) {
+        const previousScore = score;
+        score += points;
+        this.setHighScore();
+        if (
+          activeGameplayMode.id === "old-like" &&
+          !extraLifeAwarded &&
+          previousScore < 10000 &&
+          score >= 10000
+        ) {
+          lives++;
+          extraLifeAwarded = true;
+          messages.push({ text: "EXTRA LIFE", x: W / 2, y: HUD + 18.5 * TILE, time: 1.1, life: 1.1, size: 18 });
+        }
+      },
+
+      startDeathReset() {
+        deathTimer = 1.25;
+        state = "death";
+      },
+
+      startLevelClear() {
+        levelClearTimer = 1.9;
+        state = "levelclear";
+        playLevelClearSound();
+        messages.push({ text: "MAZE CLEAR", x: W / 2, y: HUD + 16 * TILE, time: 1.4, life: 1.4, size: 22 });
+      },
+
+      loseLife() {
+        playDeathSound();
+        lives--;
+        if (lives <= 0) {
+          state = "gameover";
+          this.setHighScore();
+          messages.push({ text: "GAME OVER", x: W / 2, y: HUD + 16 * TILE, time: 2, life: 2, size: 24 });
+          return;
+        }
+
+        this.startDeathReset();
+      },
+
+      updateStateTimer(dt) {
+        if (state === "death") {
+          deathTimer -= dt;
+          if (deathTimer <= 0) {
+            resetActors();
+            readyTimer = 1.1;
+            state = "ready";
+          }
+          return true;
+        }
+
+        if (state === "levelclear") {
+          levelClearTimer -= dt;
+          if (levelClearTimer <= 0) {
+            level++;
+            this.startLevel();
+          }
+          return true;
+        }
+
+        return false;
+      }
+    };
+
     function resetActors() {
       player = makePlayer();
       ghosts = makeGhosts();
@@ -1191,48 +1286,19 @@
     }
 
     function startLevel() {
-      grid = cloneMap();
-      pelletsRemaining = countPellets();
-      pelletsEaten = 0;
-      fruitMarks = new Set();
-      fruit = null;
-      resetActors();
-      readyTimer = 1.4;
-      state = "ready";
-      paused = false;
-      messages = [{ text: `LEVEL ${level}`, x: W / 2, y: HUD + 18.5 * TILE, time: 1.1, life: 1.1, size: 22 }];
+      return gameLifecycle.startLevel();
     }
 
     function newGame() {
-      playStartSound();
-      score = 0;
-      level = 1;
-      lives = 3;
-      extraLifeAwarded = false;
-      startLevel();
+      return gameLifecycle.startNewGame();
     }
 
     function setHighScore() {
-      if (score > highScore) {
-        highScore = score;
-        try { localStorage.setItem(activeGameplayMode.highScoreKey, String(highScore)); } catch (_) {}
-      }
+      return gameLifecycle.setHighScore();
     }
 
     function awardScore(points) {
-      const previousScore = score;
-      score += points;
-      setHighScore();
-      if (
-        activeGameplayMode.id === "old-like" &&
-        !extraLifeAwarded &&
-        previousScore < 10000 &&
-        score >= 10000
-      ) {
-        lives++;
-        extraLifeAwarded = true;
-        messages.push({ text: "EXTRA LIFE", x: W / 2, y: HUD + 18.5 * TILE, time: 1.1, life: 1.1, size: 18 });
-      }
+      return gameLifecycle.awardScore(points);
     }
 
     function renderGameplayMode() {
@@ -1620,10 +1686,7 @@
         maybeSpawnFruit();
 
         if (pelletsRemaining <= 0) {
-          levelClearTimer = 1.9;
-          state = "levelclear";
-          playLevelClearSound();
-          messages.push({ text: "MAZE CLEAR", x: W / 2, y: HUD + 16 * TILE, time: 1.4, life: 1.4, size: 22 });
+          gameLifecycle.startLevelClear();
         }
       }
     }
@@ -1681,16 +1744,7 @@
     }
 
     function loseLife() {
-      playDeathSound();
-      lives--;
-      if (lives <= 0) {
-        state = "gameover";
-        setHighScore();
-        messages.push({ text: "GAME OVER", x: W / 2, y: HUD + 16 * TILE, time: 2, life: 2, size: 24 });
-      } else {
-        deathTimer = 1.25;
-        state = "death";
-      }
+      return gameLifecycle.loseLife();
     }
 
     function updateMessages(dt) {
@@ -1712,21 +1766,12 @@
       }
 
       if (state === "death") {
-        deathTimer -= dt;
-        if (deathTimer <= 0) {
-          resetActors();
-          readyTimer = 1.1;
-          state = "ready";
-        }
+        gameLifecycle.updateStateTimer(dt);
         return;
       }
 
       if (state === "levelclear") {
-        levelClearTimer -= dt;
-        if (levelClearTimer <= 0) {
-          level++;
-          startLevel();
-        }
+        gameLifecycle.updateStateTimer(dt);
         return;
       }
 

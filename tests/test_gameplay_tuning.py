@@ -531,7 +531,7 @@ class GameplayTuningTests(unittest.TestCase):
             "Red should start outside while other ghosts start in the house",
         )
 
-        start_level_body = find_function_body("startLevel")
+        start_level_body = find_object_method_body("gameLifecycle", "startLevel")
         self.assertRegex(
             start_level_body,
             re.compile(r"pelletsEaten = 0"),
@@ -541,9 +541,13 @@ class GameplayTuningTests(unittest.TestCase):
         update_body = find_function_body("update")
         death_branch = re.search(r'if\s*\(state === "death"\)\s*\{(?P<body>[\s\S]*?)\n      \}', update_body)
         self.assertIsNotNone(death_branch, "Missing death-state reset branch")
-        self.assertRegex(death_branch.group("body"), re.compile(r"resetActors\(\)"), "Death should reset actors")
+        self.assertRegex(death_branch.group("body"), re.compile(r"gameLifecycle\.updateStateTimer\(dt\)"), "Death should delegate to lifecycle timer updates")
+        death_update_body = find_object_method_body("gameLifecycle", "updateStateTimer")
+        lifecycle_death_branch = re.search(r'if\s*\(state === "death"\)\s*\{(?P<body>[\s\S]*?)\n        \}', death_update_body)
+        self.assertIsNotNone(lifecycle_death_branch, "Missing lifecycle death-update branch")
+        self.assertRegex(lifecycle_death_branch.group("body"), re.compile(r"resetActors\(\)"), "Death should reset actors")
         self.assertNotRegex(
-            death_branch.group("body"),
+            lifecycle_death_branch.group("body"),
             re.compile(r"pelletsEaten = 0|startLevel\(\)"),
             "Death reset should preserve current board pellet progress for Old-like release thresholds",
         )
@@ -552,10 +556,10 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"let extraLifeAwarded\s*=\s*false", "extra-life award state")
         assert_html_contains(self, r"function awardScore\(points\)", "shared score award path")
 
-        award_body = find_function_body("awardScore")
+        award_body = find_object_method_body("gameLifecycle", "awardScore")
         self.assertRegex(award_body, re.compile(r"const previousScore = score"), "Extra-life check should compare previous score")
         self.assertRegex(award_body, re.compile(r"score \+= points"), "Shared score path should add points")
-        self.assertRegex(award_body, re.compile(r'setHighScore\(\)'), "Shared score path should update high score")
+        self.assertRegex(award_body, re.compile(r'this\.setHighScore\(\)'), "Shared score path should update high score")
         self.assertRegex(
             award_body,
             re.compile(r'activeGameplayMode\.id === "old-like"[\s\S]*?previousScore < 10000[\s\S]*?score >= 10000'),
@@ -565,8 +569,85 @@ class GameplayTuningTests(unittest.TestCase):
         self.assertRegex(award_body, re.compile(r"lives\+\+"), "Crossing 10000 should add one life")
         self.assertRegex(award_body, re.compile(r"extraLifeAwarded = true"), "Extra-life award should latch")
 
-        new_game_body = find_function_body("newGame")
+        new_game_body = find_object_method_body("gameLifecycle", "startNewGame")
         self.assertRegex(new_game_body, re.compile(r"extraLifeAwarded = false"), "New game should reset extra-life award")
+
+    def test_game_lifecycle_module_is_the_lifecycle_and_scoring_seam(self):
+        assert_html_contains(self, r"const gameLifecycle\s*=\s*\{", "game lifecycle module object exists")
+        for method_name in [
+            "startLevel",
+            "startNewGame",
+            "setHighScore",
+            "awardScore",
+            "startDeathReset",
+            "startLevelClear",
+            "loseLife",
+            "updateStateTimer",
+        ]:
+            assert_html_contains(
+                self,
+                rf"{method_name}\([^)]*\)\s*\{{",
+                f"game lifecycle module exposes {method_name}",
+            )
+
+        start_level_body = find_function_body("startLevel")
+        self.assertRegex(
+            start_level_body,
+            re.compile(r"return gameLifecycle\.startLevel\(\);"),
+            "Start level wrapper should delegate to lifecycle module",
+        )
+
+        new_game_body = find_function_body("newGame")
+        self.assertRegex(
+            new_game_body,
+            re.compile(r"return gameLifecycle\.startNewGame\(\);"),
+            "New game wrapper should delegate to lifecycle module",
+        )
+
+        set_high_score_body = find_function_body("setHighScore")
+        self.assertRegex(
+            set_high_score_body,
+            re.compile(r"return gameLifecycle\.setHighScore\(\);"),
+            "High-score wrapper should delegate to lifecycle module",
+        )
+
+        award_score_body = find_function_body("awardScore")
+        self.assertRegex(
+            award_score_body,
+            re.compile(r"return gameLifecycle\.awardScore\(points\);"),
+            "Score wrapper should delegate to lifecycle module",
+        )
+
+        lose_life_body = find_function_body("loseLife")
+        self.assertRegex(
+            lose_life_body,
+            re.compile(r"return gameLifecycle\.loseLife\(\);"),
+            "Life-loss wrapper should delegate to lifecycle module",
+        )
+
+        eat_body = find_function_body("eatAtPlayerTile")
+        self.assertRegex(
+            eat_body,
+            re.compile(r"gameLifecycle\.startLevelClear\(\)"),
+            "Level clear should delegate to lifecycle module",
+        )
+
+        update_body = find_function_body("update")
+        death_branch = re.search(r'if\s*\(state === "death"\)\s*\{(?P<body>[\s\S]*?)\n      \}', update_body)
+        self.assertIsNotNone(death_branch, "Missing death-state branch")
+        self.assertRegex(
+            death_branch.group("body"),
+            re.compile(r"gameLifecycle\.updateStateTimer\(dt\)"),
+            "Death-state updates should delegate to lifecycle module",
+        )
+
+        level_clear_branch = re.search(r'if\s*\(state === "levelclear"\)\s*\{(?P<body>[\s\S]*?)\n      \}', update_body)
+        self.assertIsNotNone(level_clear_branch, "Missing level-clear branch")
+        self.assertRegex(
+            level_clear_branch.group("body"),
+            re.compile(r"gameLifecycle\.updateStateTimer\(dt\)"),
+            "Level-clear updates should delegate to lifecycle module",
+        )
 
     def test_power_pellets_score_and_reverse_even_when_frightened_time_is_zero(self):
         eat_body = find_function_body("eatAtPlayerTile")

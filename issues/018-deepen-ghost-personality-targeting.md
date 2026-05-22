@@ -20,15 +20,15 @@ Architecture target:
 
 ## Acceptance criteria
 
-- [ ] Red chase target remains Maze Muncher's tile.
-- [ ] Pink ahead target remains four tiles ahead with the current up-direction ambush quirk feel.
-- [ ] Cyan target remains based on red ghost tile and the two-ahead vector.
-- [ ] Orange target remains player tile when far and scatter corner when close.
-- [ ] Cruise Elroy red still targets Maze Muncher during scatter only while active.
-- [ ] Frightened movement remains random in Old-like mode and mixed in Maze Muncher mode.
-- [ ] Static tests cover each Ghost personality through the deepened Module interface.
-- [ ] Full test suite passes.
+- [x] Red chase target remains Maze Muncher's tile.
+- [x] Pink ahead target remains four tiles ahead with the current up-direction ambush quirk feel.
+- [x] Cyan target remains based on red ghost tile and the two-ahead vector.
+- [x] Orange target remains player tile when far and scatter corner when close.
+- [x] Cruise Elroy red still targets Maze Muncher during scatter only while active.
+- [x] Frightened movement remains random in Old-like mode and mixed in Maze Muncher mode.
+- [x] Static tests cover each Ghost personality through the deepened Module interface.
+- [x] Full test suite passes.
 
 ## Blocked by
 
-- Recommended after `issues/017-deepen-ghost-tunnel-mouth-movement.md`, but can start independently if scoped carefully.
+None - completed after `issues/017-deepen-ghost-tunnel-mouth-movement.md`

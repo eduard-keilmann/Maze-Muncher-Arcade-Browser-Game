@@ -93,7 +93,7 @@ class GameplayTuningTests(unittest.TestCase):
         )
 
     def test_frightened_mode_interrupts_scatter_chase_timing(self):
-        update_mode_body = find_function_body("updateMode")
+        update_mode_body = find_object_method_body("ghostState", "updateModeTimer")
         self.assertRegex(
             update_mode_body,
             re.compile(r"if\s*\(frightenedTimer > 0\)\s*\{[\s\S]*?frightenedTimer -= dt[\s\S]*?return;"),
@@ -464,7 +464,7 @@ class GameplayTuningTests(unittest.TestCase):
                 f"Old-like {ghost_name} pellet threshold and timer fallback",
             )
 
-        update_body = find_function_body("updateGhostRelease")
+        update_body = find_object_method_body("ghostState", "updateRelease")
         self.assertRegex(
             update_body,
             re.compile(r'activeGameplayMode\.id !== "old-like"[\s\S]*?releaseLeft -= dt'),
@@ -474,6 +474,53 @@ class GameplayTuningTests(unittest.TestCase):
             update_body,
             re.compile(r"pelletsEaten >= release\.pellets[\s\S]*?releaseTimer >= release\.fallback"),
             "Old-like home ghosts should leave by pellet progress or fallback timing",
+        )
+
+    def test_ghost_state_module_is_the_state_transition_seam(self):
+        assert_html_contains(self, r"const ghostState\s*=\s*\{", "ghost state module object exists")
+        for method_name in [
+            "resetRoundState",
+            "startLeaving",
+            "updateRelease",
+            "finishLeaving",
+            "finishEatenReturn",
+            "updateModeTimer",
+        ]:
+            assert_html_contains(
+                self,
+                rf"{method_name}\([^)]*\)\s*\{{",
+                f"ghost state module exposes {method_name}",
+            )
+
+        reset_body = find_function_body("resetActors")
+        self.assertRegex(
+            reset_body,
+            re.compile(r"ghostState\.resetRoundState\(\)"),
+            "Actor reset should delegate round-state resets to ghost state module",
+        )
+
+        update_mode_body = find_function_body("updateMode")
+        self.assertRegex(
+            update_mode_body,
+            re.compile(r"return ghostState\.updateModeTimer\(dt\);"),
+            "Mode updates should delegate scatter/chase timing to ghost state module",
+        )
+
+        update_ghosts_body = find_function_body("updateGhosts")
+        self.assertRegex(
+            update_ghosts_body,
+            re.compile(r"ghostState\.updateRelease\(g,\s*dt\)"),
+            "Home ghost release should delegate to ghost state module",
+        )
+        self.assertRegex(
+            update_ghosts_body,
+            re.compile(r'ghostState\.finishLeaving\(g\)'),
+            "Leaving-to-normal transition should delegate to ghost state module",
+        )
+        self.assertRegex(
+            update_ghosts_body,
+            re.compile(r"ghostState\.finishEatenReturn\(g\)"),
+            "Eaten ghost return should delegate to ghost state module",
         )
 
     def test_old_like_ghost_release_thresholds_survive_player_death(self):

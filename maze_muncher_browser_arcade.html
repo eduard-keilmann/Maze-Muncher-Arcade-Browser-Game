@@ -1027,13 +1027,77 @@
       ];
     }
 
+    const ghostState = {
+      resetRoundState() {
+        frightenedTimer = 0;
+        ghostEatValue = 200;
+        modeIndex = 0;
+        modeTimer = 0;
+      },
+
+      startLeaving(g) {
+        g.state = "leaving";
+        g.x = Math.round(g.x / TILE) * TILE + TILE / 2;
+        g.y = Math.round(g.y / TILE) * TILE + TILE / 2;
+        g.dir = DIRS.up;
+      },
+
+      updateRelease(g, dt) {
+        if (activeGameplayMode.id !== "old-like") {
+          g.releaseLeft -= dt;
+          if (g.releaseLeft <= 0) this.startLeaving(g);
+          return;
+        }
+
+        const release = OLD_LIKE_GHOST_RELEASE[g.name];
+        if (!release) return;
+        g.releaseTimer += dt;
+        if (pelletsEaten >= release.pellets || g.releaseTimer >= release.fallback) {
+          this.startLeaving(g);
+        }
+      },
+
+      finishLeaving(g) {
+        if (g.state !== "leaving" || g.y > 11.5 * TILE + 2) return false;
+        g.state = "normal";
+        g.y = 11.5 * TILE;
+        g.dir = DIRS.left;
+        return true;
+      },
+
+      finishEatenReturn(g) {
+        if (g.state !== "eaten") return false;
+        const distHome = Math.hypot(g.x - 13.5 * TILE, g.y - 14.5 * TILE);
+        if (distHome >= 9) return false;
+        g.x = 13.5 * TILE;
+        g.y = 14.5 * TILE;
+        g.state = "leaving";
+        g.dir = DIRS.up;
+        return true;
+      },
+
+      updateModeTimer(dt) {
+        if (frightenedTimer > 0) {
+          frightenedTimer -= dt;
+          if (frightenedTimer <= 0) frightenedTimer = 0;
+          return;
+        }
+
+        modeTimer += dt;
+        const modeCycle = modeCycleFor(activeGameplayMode, level);
+        const current = modeCycle[modeIndex];
+        if (modeTimer >= current.duration && modeIndex < modeCycle.length - 1) {
+          modeIndex++;
+          modeTimer = 0;
+          reverseNormalGhosts();
+        }
+      }
+    };
+
     function resetActors() {
       player = makePlayer();
       ghosts = makeGhosts();
-      frightenedTimer = 0;
-      ghostEatValue = 200;
-      modeIndex = 0;
-      modeTimer = 0;
+      ghostState.resetRoundState();
     }
 
     function startLevel() {
@@ -1421,43 +1485,12 @@
       }
     }
 
-    function startGhostLeaving(g) {
-      g.state = "leaving";
-      g.x = Math.round(g.x / TILE) * TILE + TILE / 2;
-      g.y = Math.round(g.y / TILE) * TILE + TILE / 2;
-      g.dir = DIRS.up;
-    }
-
     function updateGhostRelease(g, dt) {
-      if (activeGameplayMode.id !== "old-like") {
-        g.releaseLeft -= dt;
-        if (g.releaseLeft <= 0) startGhostLeaving(g);
-        return;
-      }
-
-      const release = OLD_LIKE_GHOST_RELEASE[g.name];
-      if (!release) return;
-      g.releaseTimer += dt;
-      if (pelletsEaten >= release.pellets || g.releaseTimer >= release.fallback) {
-        startGhostLeaving(g);
-      }
+      return ghostState.updateRelease(g, dt);
     }
 
     function updateMode(dt) {
-      if (frightenedTimer > 0) {
-        frightenedTimer -= dt;
-        if (frightenedTimer <= 0) frightenedTimer = 0;
-        return;
-      }
-
-      modeTimer += dt;
-      const modeCycle = modeCycleFor(activeGameplayMode, level);
-      const current = modeCycle[modeIndex];
-      if (modeTimer >= current.duration && modeIndex < modeCycle.length - 1) {
-        modeIndex++;
-        modeTimer = 0;
-        reverseNormalGhosts();
-      }
+      return ghostState.updateModeTimer(dt);
     }
 
     function updateGhosts(dt) {
@@ -1465,27 +1498,14 @@
         if (g.state === "home") {
           g.y += g.homeDrift * actorSpeed(g, "ghost") * 0.32 * dt;
           if (g.y < 13.5 * TILE || g.y > 15.5 * TILE) g.homeDrift *= -1;
-          updateGhostRelease(g, dt);
+          ghostState.updateRelease(g, dt);
           continue;
         }
 
         moveActor(g, dt, "ghost");
 
-        if (g.state === "leaving" && g.y <= 11.5 * TILE + 2) {
-          g.state = "normal";
-          g.y = 11.5 * TILE;
-          g.dir = DIRS.left;
-        }
-
-        if (g.state === "eaten") {
-          const distHome = Math.hypot(g.x - 13.5 * TILE, g.y - 14.5 * TILE);
-          if (distHome < 9) {
-            g.x = 13.5 * TILE;
-            g.y = 14.5 * TILE;
-            g.state = "leaving";
-            g.dir = DIRS.up;
-          }
-        }
+        ghostState.finishLeaving(g);
+        ghostState.finishEatenReturn(g);
       }
     }
 

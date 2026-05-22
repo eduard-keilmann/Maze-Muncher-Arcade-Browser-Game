@@ -20,14 +20,20 @@ Architecture target:
 
 ## Acceptance criteria
 
-- [ ] Home ghosts leave by Old-like pellet thresholds or fallback timer.
-- [ ] Maze Muncher mode preserves current timer-based release behavior.
-- [ ] Red starts outside according to existing setup.
-- [ ] Player death resets actors but does not reset board pellet progress.
-- [ ] Eaten ghosts return to the house and then leave again.
-- [ ] Frightened time still pauses normal Scatter/chase cycle progression.
-- [ ] Static tests cover state transitions through the deepened Module interface where practical.
-- [ ] Full test suite passes.
+- [x] Home ghosts leave by Old-like pellet thresholds or fallback timer.
+- [x] Maze Muncher mode preserves current timer-based release behavior.
+- [x] Red starts outside according to existing setup.
+- [x] Player death resets actors but does not reset board pellet progress.
+- [x] Eaten ghosts return to the house and then leave again.
+- [x] Frightened time still pauses normal Scatter/chase cycle progression.
+- [x] Static tests cover state transitions through the deepened Module interface where practical.
+- [x] Full test suite passes.
+
+## Implemented
+
+- Added local `ghostState` module seam in `maze_muncher_browser_arcade.html`.
+- Moved round reset, ghost release, leaving transition, eaten return, and frightened/scatter-chase timer progression behind that seam.
+- Kept visible gameplay behavior unchanged while improving locality and static test coverage.
 
 ## Blocked by
 

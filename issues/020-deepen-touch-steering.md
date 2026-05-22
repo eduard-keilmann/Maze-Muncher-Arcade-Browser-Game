@@ -1,3 +1,7 @@
+## Status
+
+Implemented in the current codebase. Static tests cover the shared touch steering interface and the full test suite is green.
+
 ## What to build
 
 Deepen Touch steering so D-pad, whole-page continuous swipe, canvas tap-to-turn, and touch actions share a small, clear steering interface.
@@ -21,14 +25,14 @@ Architecture target:
 
 ## Acceptance criteria
 
-- [ ] D-pad, whole-page swipe, and canvas tap-to-turn all still call the shared direction path.
-- [ ] Continuous swipe remains low latency and updates direction during pointer movement.
-- [ ] Tap-to-turn still loses to swipe when movement exceeds the swipe threshold.
-- [ ] Interactive controls do not double-trigger swipe logic.
-- [ ] Desktop mouse steering remains canvas-only.
-- [ ] Title/game-over swipe or tap starts the game before applying direction.
-- [ ] Static tests cover behavior through the deepened Touch steering interface where practical.
-- [ ] Full test suite passes.
+- [x] D-pad, whole-page swipe, and canvas tap-to-turn all still call the shared direction path.
+- [x] Continuous swipe remains low latency and updates direction during pointer movement.
+- [x] Tap-to-turn still loses to swipe when movement exceeds the swipe threshold.
+- [x] Interactive controls do not double-trigger swipe logic.
+- [x] Desktop mouse steering remains canvas-only.
+- [x] Title/game-over swipe or tap starts the game before applying direction.
+- [x] Static tests cover behavior through the deepened Touch steering interface where practical.
+- [x] Full test suite passes.
 
 ## Blocked by
 

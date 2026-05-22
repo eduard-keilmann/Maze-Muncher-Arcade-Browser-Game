@@ -20,13 +20,13 @@ Architecture target:
 
 ## Acceptance criteria
 
-- [ ] At a tunnel mouth, red ghost chase targeting can choose a non-tunnel direction when Maze Muncher is elsewhere.
-- [ ] Tunnel continuation is applied only after a ghost is inside the side tunnel lane or offscreen tunnel wrap area.
-- [ ] Hidden tunnel dead-end escape logic still prevents ghosts from freezing inside the side tunnel.
-- [ ] Tunnel slowdown remains applied to normal ghosts in Old-like mode and not to Maze Muncher.
-- [ ] Maze Muncher mode keeps existing tuning unless the tunnel fix is a shared bug fix.
-- [ ] Static tests cover tunnel-mouth target selection, tunnel continuation after entry, and no forced tunnel entry at mouth.
-- [ ] Full test suite passes.
+- [x] At a tunnel mouth, red ghost chase targeting can choose a non-tunnel direction when Maze Muncher is elsewhere.
+- [x] Tunnel continuation is applied only after a ghost is inside the side tunnel lane or offscreen tunnel wrap area.
+- [x] Hidden tunnel dead-end escape logic still prevents ghosts from freezing inside the side tunnel.
+- [x] Tunnel slowdown remains applied to normal ghosts in Old-like mode and not to Maze Muncher.
+- [x] Maze Muncher mode keeps existing tuning unless the tunnel fix is a shared bug fix.
+- [x] Static tests cover tunnel-mouth target selection, tunnel continuation after entry, and no forced tunnel entry at mouth.
+- [x] Full test suite passes.
 
 ## Blocked by
 

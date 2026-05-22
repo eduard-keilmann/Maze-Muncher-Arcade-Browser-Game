@@ -78,7 +78,7 @@ class MobileControlsTests(unittest.TestCase):
             "short portrait mobile media query",
         )
         assert_html_contains(self, r'--touch-square-size:\s*64px', "short portrait keeps saved square D-pad size")
-        assert_html_contains(self, r'--touch-width:\s*88px', "short portrait keeps wider left and right D-pad buttons")
+        assert_html_contains(self, r'--touch-width:\s*96px', "short portrait makes left and right D-pad buttons a bit wider")
         assert_html_contains(self, r'--touch-vertical-width:\s*154px', "short portrait gives centered up and down buttons visible side overlap")
         assert_html_contains(self, r'--touch-height:\s*var\(--touch-square-size\)', "short portrait preserves saved square height")
         assert_html_contains(self, r'--touch-wing-offset:\s*5px', "short portrait nudges left and right outward")
@@ -113,7 +113,7 @@ class MobileControlsTests(unittest.TestCase):
         assert_html_contains(self, r'\.touch-controls\s*\{[^}]*grid-area:\s*controls;', "touch controls assigned beside canvas")
         assert_html_contains(self, r'\.help\s*\{[^}]*display:\s*none;', "landscape hides help to reduce scroll pressure")
         assert_html_contains(self, r'--touch-square-size:\s*60px', "landscape keeps saved square D-pad size")
-        assert_html_contains(self, r'--touch-width:\s*80px', "landscape keeps wider left and right D-pad buttons")
+        assert_html_contains(self, r'--touch-width:\s*84px', "landscape makes left and right D-pad buttons a bit wider")
         assert_html_contains(self, r'--touch-vertical-width:\s*142px', "landscape gives centered up and down buttons visible side overlap")
         assert_html_contains(self, r'--touch-height:\s*var\(--touch-square-size\)', "landscape preserves saved square height")
         assert_html_contains(self, r'--touch-wing-offset:\s*5px', "landscape nudges left and right outward")
@@ -123,7 +123,7 @@ class MobileControlsTests(unittest.TestCase):
 
     def test_mobile_controls_use_wider_dpad_with_saved_square_layout(self):
         assert_html_contains(self, r'--touch-square-size:\s*72px', "default mobile keeps saved square D-pad size")
-        assert_html_contains(self, r'--touch-width:\s*100px', "default mobile left and right D-pad buttons keep current width")
+        assert_html_contains(self, r'--touch-width:\s*108px', "default mobile left and right D-pad buttons are a bit wider")
         assert_html_contains(self, r'--touch-vertical-width:\s*172px', "default mobile up and down D-pad buttons visibly pass side-button inner edges")
         assert_html_contains(self, r'--touch-height:\s*var\(--touch-square-size\)', "default mobile D-pad height keeps saved square size")
         assert_html_contains(self, r'--touch-wing-offset:\s*6px', "default mobile nudges left and right outward")

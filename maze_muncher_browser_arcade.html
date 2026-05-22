@@ -1319,41 +1319,6 @@
       return { x: p.x + dir.dx * amount, y: p.y + dir.dy * amount };
     }
 
-    function targetForGhost(g) {
-      if (g.state === "leaving") return { x: 13, y: 11 };
-      if (g.state === "eaten") return { x: 13, y: 14 };
-
-      const pDir = player.dir || player.lastDir || DIRS.left;
-      const p = playerTile();
-      const currentMode = modeCycleFor(activeGameplayMode, level)[modeIndex].mode;
-
-      if (currentMode === "scatter") {
-        if (oldLikeElroyStage(g)) return { x: p.x, y: p.y };
-        return g.scatter;
-      }
-
-      if (g.name === "red") return { x: p.x, y: p.y };
-
-      if (g.name === "pink") {
-        const ahead = dirAheadTiles(pDir, 4);
-        if (pDir.name === "up") ahead.x -= 4; // keeps the old ambush quirk feel
-        return ahead;
-      }
-
-      if (g.name === "cyan") {
-        const red = ghosts.find(ghost => ghost.name === "red");
-        const redTile = actorTile(red);
-        const ahead = dirAheadTiles(pDir, 2);
-        return { x: ahead.x * 2 - redTile.x, y: ahead.y * 2 - redTile.y };
-      }
-
-      const ghostTile = actorTile(g);
-      const dx = ghostTile.x - p.x;
-      const dy = ghostTile.y - p.y;
-      const distanceTiles = Math.hypot(dx, dy);
-      return distanceTiles > 8 ? { x: p.x, y: p.y } : g.scatter;
-    }
-
     function availableDirections(g) {
       let choices = DIR_ORDER.filter(dir => canMove(g, dir, "ghost") && !isTunnelMouthDeadEndDirection(g, dir));
       const reverse = opposite(g.dir);
@@ -1364,35 +1329,80 @@
       return choices;
     }
 
+    const ghostPersonality = {
+      targetTile(g) {
+        if (g.state === "leaving") return { x: 13, y: 11 };
+        if (g.state === "eaten") return { x: 13, y: 14 };
+
+        const pDir = player.dir || player.lastDir || DIRS.left;
+        const p = playerTile();
+        const currentMode = modeCycleFor(activeGameplayMode, level)[modeIndex].mode;
+
+        if (currentMode === "scatter") {
+          if (oldLikeElroyStage(g)) return { x: p.x, y: p.y };
+          return g.scatter;
+        }
+
+        if (g.name === "red") return { x: p.x, y: p.y };
+
+        if (g.name === "pink") {
+          const ahead = dirAheadTiles(pDir, 4);
+          if (pDir.name === "up") ahead.x -= 4; // keeps the old ambush quirk feel
+          return ahead;
+        }
+
+        if (g.name === "cyan") {
+          const red = ghosts.find(ghost => ghost.name === "red");
+          const redTile = actorTile(red);
+          const ahead = dirAheadTiles(pDir, 2);
+          return { x: ahead.x * 2 - redTile.x, y: ahead.y * 2 - redTile.y };
+        }
+
+        const ghostTile = actorTile(g);
+        const dx = ghostTile.x - p.x;
+        const dy = ghostTile.y - p.y;
+        const distanceTiles = Math.hypot(dx, dy);
+        return distanceTiles > 8 ? { x: p.x, y: p.y } : g.scatter;
+      },
+
+      chooseDirection(g) {
+        if (g.state === "home") return null;
+
+        const choices = availableDirections(g);
+        if (!choices.length) return opposite(g.dir) || DIRS.left;
+
+        if (frightenedTimer > 0 && g.state === "normal") {
+          if (frightenedMovementFor(activeGameplayMode, level) === "random") {
+            return choices[Math.floor(Math.random() * choices.length)];
+          }
+          if (Math.random() < 0.72 || choices.length === 1) {
+            return choices[Math.floor(Math.random() * choices.length)];
+          }
+        }
+
+        const target = this.targetTile(g);
+        let best = choices[0];
+        let bestDistance = Infinity;
+
+        for (const dir of choices) {
+          const nextX = Math.floor(g.x / TILE) + dir.dx;
+          const nextY = Math.floor(g.y / TILE) + dir.dy;
+          const d = (nextX - target.x) ** 2 + (nextY - target.y) ** 2;
+          if (d < bestDistance) {
+            bestDistance = d;
+            best = dir;
+          }
+        }
+        return best;
+      }
+    };
+
+    function targetForGhost(g) {
+      return ghostPersonality.targetTile(g);
+    }
+
     function chooseGhostDirection(g) {
-      if (g.state === "home") return null;
-
-      const choices = availableDirections(g);
-      if (!choices.length) return opposite(g.dir) || DIRS.left;
-
-      if (frightenedTimer > 0 && g.state === "normal") {
-        if (frightenedMovementFor(activeGameplayMode, level) === "random") {
-          return choices[Math.floor(Math.random() * choices.length)];
-        }
-        if (Math.random() < 0.72 || choices.length === 1) {
-          return choices[Math.floor(Math.random() * choices.length)];
-        }
-      }
-
-      const target = targetForGhost(g);
-      let best = choices[0];
-      let bestDistance = Infinity;
-
-      for (const dir of choices) {
-        const nextX = Math.floor(g.x / TILE) + dir.dx;
-        const nextY = Math.floor(g.y / TILE) + dir.dy;
-        const d = (nextX - target.x) ** 2 + (nextY - target.y) ** 2;
-        if (d < bestDistance) {
-          bestDistance = d;
-          best = dir;
-        }
-      }
-      return best;
+      return ghostPersonality.chooseDirection(g);
     }
 
     function chooseGhostTargetDirection(g) {

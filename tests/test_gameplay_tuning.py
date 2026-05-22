@@ -23,6 +23,16 @@ def find_function_body(name):
     return match.group("body")
 
 
+def find_object_method_body(object_name, method_name):
+    match = re.search(
+        rf"const {object_name}\s*=\s*\{{[\s\S]*?{method_name}\([^)]*\)\s*\{{(?P<body>[\s\S]*?)\n      \}}",
+        HTML,
+    )
+    if not match:
+        raise AssertionError(f"Missing {object_name}.{method_name}")
+    return match.group("body")
+
+
 class GameplayTuningTests(unittest.TestCase):
     def test_mode_aware_tuning_entry_points_exist(self):
         for name in [
@@ -152,9 +162,9 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"frightenedMovement:\s*\"random\"", "Old-like frightened random movement tuning")
         assert_html_contains(self, r"frightenedMovementFor\(activeGameplayMode,\s*level\)", "active mode selects frightened movement")
 
-        choose_body = find_function_body("chooseGhostDirection")
+        choose_body = find_object_method_body("ghostPersonality", "chooseDirection")
         frightened_branch = re.search(
-            r'if\s*\(frightenedTimer > 0 && g\.state === "normal"\)\s*\{(?P<body>[\s\S]*?)\n      \}',
+            r'if\s*\(frightenedTimer > 0 && g\.state === "normal"\)\s*\{(?P<body>[\s\S]*?)\n\s+\}',
             choose_body,
         )
         self.assertIsNotNone(frightened_branch, "Missing frightened ghost direction branch")
@@ -352,7 +362,7 @@ class GameplayTuningTests(unittest.TestCase):
         )
 
     def test_old_like_red_cruise_elroy_targets_player_during_scatter(self):
-        target_body = find_function_body("targetForGhost")
+        target_body = find_object_method_body("ghostPersonality", "targetTile")
         self.assertRegex(
             target_body,
             re.compile(r"oldLikeElroyStage\(g\)[\s\S]*?return \{ x: p\.x, y: p\.y \}"),
@@ -369,10 +379,29 @@ class GameplayTuningTests(unittest.TestCase):
             "Non-Elroy ghosts and inactive Elroy red should keep scatter target",
         )
 
+    def test_ghost_personality_module_is_the_targeting_and_direction_seam(self):
+        assert_html_contains(self, r"const ghostPersonality\s*=\s*\{", "ghost personality module object exists")
+        assert_html_contains(self, r"targetTile\(g\)\s*\{", "ghost personality module exposes target selection")
+        assert_html_contains(self, r"chooseDirection\(g\)\s*\{", "ghost personality module exposes direction choice")
+
+        target_body = find_function_body("targetForGhost")
+        self.assertRegex(
+            target_body,
+            re.compile(r"return ghostPersonality\.targetTile\(g\);"),
+            "Public target helper should delegate to ghost personality module",
+        )
+
+        choose_body = find_function_body("chooseGhostDirection")
+        self.assertRegex(
+            choose_body,
+            re.compile(r"return ghostPersonality\.chooseDirection\(g\);"),
+            "Public chooser should delegate to ghost personality module",
+        )
+
     def test_ghost_personality_targeting_uses_tile_coordinates(self):
         assert_html_contains(self, r"function actorTile\(actor\)", "shared actor tile-coordinate helper")
 
-        target_body = find_function_body("targetForGhost")
+        target_body = find_object_method_body("ghostPersonality", "targetTile")
         self.assertRegex(
             target_body,
             re.compile(r'g\.state === "leaving"[\s\S]*?return \{ x: 13, y: 11 \}'),
@@ -409,7 +438,7 @@ class GameplayTuningTests(unittest.TestCase):
             "Orange distance decision should use ghost tile coordinates",
         )
 
-        choose_body = find_function_body("chooseGhostDirection")
+        choose_body = find_object_method_body("ghostPersonality", "chooseDirection")
         self.assertRegex(
             choose_body,
             re.compile(r"const nextX = Math\.floor\(g\.x / TILE\) \+ dir\.dx;[\s\S]*?const nextY = Math\.floor\(g\.y / TILE\) \+ dir\.dy;"),

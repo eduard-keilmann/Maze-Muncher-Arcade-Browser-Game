@@ -712,11 +712,6 @@
     let musicEnabled = readMusicEnabled();
     const MASTER_VOLUME = 0.0336;
     const MUSIC_VOLUME = 0.078;
-    let audioContext = null;
-    let audioPrimed = false;
-    let pelletToneHigh = false;
-    let musicTimer = 0;
-    let musicPulseIndex = 0;
 
     function createAudioContext() {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -724,115 +719,234 @@
       return new AudioContext();
     }
 
+    const gameAudio = {
+      audioContext: null,
+      audioPrimed: false,
+      pelletToneHigh: false,
+      musicTimer: 0,
+      musicPulseIndex: 0,
+
+      getAudioContext() {
+        if (!soundEnabled && !musicEnabled) return null;
+        if (!this.audioContext) this.audioContext = createAudioContext();
+        return this.audioContext;
+      },
+
+      primeAudioOutput() {
+        const context = this.getAudioContext();
+        if (!context || this.audioPrimed) return;
+        this.audioPrimed = true;
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(context.currentTime);
+        oscillator.stop(context.currentTime + 0.01);
+      },
+
+      unlock() {
+        const context = this.getAudioContext();
+        if (!context) return;
+        if (context.state === "suspended") this.audioContext.resume();
+        this.primeAudioOutput();
+      },
+
+      playTone(frequency, delay, duration, volume = MASTER_VOLUME) {
+        const context = this.getAudioContext();
+        if (!context) return;
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const startAt = context.currentTime + delay;
+        const endAt = startAt + duration;
+
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(frequency, startAt);
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(startAt);
+        oscillator.stop(endAt + 0.01);
+      },
+
+      playMusicTone(frequency, delay, duration, volume = MUSIC_VOLUME) {
+        const context = this.getAudioContext();
+        if (!context) return;
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const startAt = context.currentTime + delay;
+        const endAt = startAt + duration;
+        const attack = 0.028;
+        const release = 0.035;
+
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(frequency, startAt);
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.linearRampToValueAtTime(volume, startAt + attack);
+        gain.gain.linearRampToValueAtTime(Math.max(volume * 0.72, 0.0001), endAt);
+        gain.gain.linearRampToValueAtTime(0.0001, endAt + release);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(startAt);
+        oscillator.stop(endAt + release + 0.01);
+      },
+
+      playSequence(notes, volume = MASTER_VOLUME) {
+        for (const [frequency, delay, duration] of notes) this.playTone(frequency, delay, duration, volume);
+      },
+
+      playEventSound(eventName, detail) {
+        if (!soundEnabled) return;
+        if (eventName === "start") {
+          this.playSequence([[392, 0, 0.07], [523, 0.08, 0.07], [659, 0.16, 0.08], [784, 0.25, 0.12]], MASTER_VOLUME * 0.8);
+          return;
+        }
+        if (eventName === "pellet") {
+          if (detail === "o") {
+            this.playSequence([[247, 0, 0.05], [330, 0.06, 0.06], [494, 0.13, 0.08]], MASTER_VOLUME * 0.9);
+            return;
+          }
+          this.pelletToneHigh = !this.pelletToneHigh;
+          this.playTone(this.pelletToneHigh ? 232 : 184, 0, 0.035, MASTER_VOLUME * 0.65);
+          return;
+        }
+        if (eventName === "fruit") {
+          this.playSequence([[523, 0, 0.05], [784, 0.06, 0.06], [1047, 0.13, 0.08]], MASTER_VOLUME * 0.9);
+          return;
+        }
+        if (eventName === "ghost-eaten") {
+          this.playSequence([[330, 0, 0.06], [494, 0.07, 0.08], [660, 0.16, 0.1]], MASTER_VOLUME);
+          return;
+        }
+        if (eventName === "death") {
+          this.playSequence([[392, 0, 0.09], [330, 0.1, 0.09], [262, 0.2, 0.12], [196, 0.34, 0.18]], MASTER_VOLUME);
+          return;
+        }
+        if (eventName === "level-clear") {
+          this.playSequence([[523, 0, 0.07], [659, 0.08, 0.07], [784, 0.16, 0.07], [1047, 0.26, 0.16]], MASTER_VOLUME * 0.9);
+        }
+      },
+
+      previewSound() {
+        if (!soundEnabled) return;
+        this.playSequence([[659, 0, 0.08], [988, 0.1, 0.12]], MASTER_VOLUME);
+      },
+
+      previewMusic() {
+        if (!musicEnabled) return;
+        this.playMusicTone(147, 0, 0.055, MUSIC_VOLUME);
+        this.playMusicTone(220, 0.08, 0.06, MUSIC_VOLUME * 0.8);
+      },
+
+      computeThreatLevel(facts) {
+        if (!facts.player || !facts.ghosts) return 0;
+        let threat = 0;
+        const dangerousGhosts = facts.ghosts.filter(g => g.state !== "eaten" && g.state !== "home" && !(facts.frightenedTimer > 0 && g.state === "normal"));
+        for (const g of dangerousGhosts) {
+          const tileDistance = Math.hypot(facts.player.x - g.x, facts.player.y - g.y) / TILE;
+          threat = Math.max(threat, 1 - Math.min(tileDistance, 9) / 9);
+        }
+
+        if (facts.frightenedTimer > 0) {
+          threat = Math.max(threat, 1 - Math.min(1, facts.frightenedTimer / 2));
+        }
+
+        const pelletPressure = 1 - Math.min(1, facts.pelletsRemaining / 60);
+        threat = Math.max(threat, pelletPressure * 0.45);
+
+        if (facts.ghostMode === "chase") threat += 0.18;
+        if (facts.ghosts.some(g => oldLikeElroyStage(g))) threat += 0.16;
+
+        return Math.max(0, Math.min(1, threat));
+      },
+
+      musicPulseInterval(threat, facts) {
+        if (facts.frightenedTimer > 0) return facts.frightenedTimer < 2 ? 0.22 : 0.34;
+        return 0.62 - threat * 0.38;
+      },
+
+      playMusicPulse(threat, facts) {
+        if (!musicEnabled) return;
+        if (facts.frightenedTimer > 0) {
+          const frequency = this.musicPulseIndex % 2 === 0 ? 196 : 247;
+          this.playMusicTone(frequency, 0, 0.045, MUSIC_VOLUME * 0.75);
+        } else {
+          const base = threat > 0.65 ? 165 : threat > 0.35 ? 147 : 123;
+          this.playMusicTone(this.musicPulseIndex % 2 === 0 ? base : base * 1.25, 0, 0.04, MUSIC_VOLUME);
+          if (threat > 0.72) this.playMusicTone(base * 1.5, 0.055, 0.03, MUSIC_VOLUME * 0.72);
+        }
+        this.musicPulseIndex++;
+      },
+
+      startMusic() {
+        this.musicTimer = 0;
+      },
+
+      stopMusic() {
+        this.musicTimer = 0;
+      },
+
+      updateMusic(dt, facts) {
+        this.musicTimer -= dt;
+        if (this.musicTimer > 0) return;
+        const threat = this.computeThreatLevel(facts);
+        this.playMusicPulse(threat, facts);
+        this.musicTimer = this.musicPulseInterval(threat, facts);
+      }
+    };
+
     function getAudioContext() {
-      if (!soundEnabled && !musicEnabled) return null;
-      if (!audioContext) audioContext = createAudioContext();
-      return audioContext;
+      return gameAudio.getAudioContext();
     }
 
     function primeAudioOutput() {
-      const context = getAudioContext();
-      if (!context || audioPrimed) return;
-      audioPrimed = true;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      gain.gain.setValueAtTime(0.0001, context.currentTime);
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(context.currentTime);
-      oscillator.stop(context.currentTime + 0.01);
+      gameAudio.primeAudioOutput();
     }
 
     function unlockAudio() {
-      const context = getAudioContext();
-      if (!context) return;
-      if (context.state === "suspended") audioContext.resume();
-      primeAudioOutput();
+      gameAudio.unlock();
     }
 
     function playTone(frequency, delay, duration, volume = MASTER_VOLUME) {
-      const context = getAudioContext();
-      if (!context) return;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      const startAt = context.currentTime + delay;
-      const endAt = startAt + duration;
-
-      oscillator.type = "square";
-      oscillator.frequency.setValueAtTime(frequency, startAt);
-      gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(startAt);
-      oscillator.stop(endAt + 0.01);
+      gameAudio.playTone(frequency, delay, duration, volume);
     }
 
     function playMusicTone(frequency, delay, duration, volume = MUSIC_VOLUME) {
-      const context = getAudioContext();
-      if (!context) return;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      const startAt = context.currentTime + delay;
-      const endAt = startAt + duration;
-      const attack = 0.028;
-      const release = 0.035;
-
-      oscillator.type = "triangle";
-      oscillator.frequency.setValueAtTime(frequency, startAt);
-      gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.linearRampToValueAtTime(volume, startAt + attack);
-      gain.gain.linearRampToValueAtTime(Math.max(volume * 0.72, 0.0001), endAt);
-      gain.gain.linearRampToValueAtTime(0.0001, endAt + release);
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(startAt);
-      oscillator.stop(endAt + release + 0.01);
+      gameAudio.playMusicTone(frequency, delay, duration, volume);
     }
 
     function playSequence(notes, volume = MASTER_VOLUME) {
-      for (const [frequency, delay, duration] of notes) playTone(frequency, delay, duration, volume);
+      gameAudio.playSequence(notes, volume);
     }
 
     function playStartSound() {
-      if (!soundEnabled) return;
-      playSequence([[392, 0, 0.07], [523, 0.08, 0.07], [659, 0.16, 0.08], [784, 0.25, 0.12]], MASTER_VOLUME * 0.8);
+      gameAudio.playEventSound("start");
     }
 
     function previewSound() {
-      if (!soundEnabled) return;
-      playSequence([[659, 0, 0.08], [988, 0.1, 0.12]], MASTER_VOLUME);
+      gameAudio.previewSound();
     }
 
     function playPelletSound(cell) {
-      if (!soundEnabled) return;
-      if (cell === "o") {
-        playSequence([[247, 0, 0.05], [330, 0.06, 0.06], [494, 0.13, 0.08]], MASTER_VOLUME * 0.9);
-        return;
-      }
-      pelletToneHigh = !pelletToneHigh;
-      playTone(pelletToneHigh ? 232 : 184, 0, 0.035, MASTER_VOLUME * 0.65);
+      gameAudio.playEventSound("pellet", cell);
     }
 
     function playFruitSound() {
-      if (!soundEnabled) return;
-      playSequence([[523, 0, 0.05], [784, 0.06, 0.06], [1047, 0.13, 0.08]], MASTER_VOLUME * 0.9);
+      gameAudio.playEventSound("fruit");
     }
 
     function playGhostEatenSound() {
-      if (!soundEnabled) return;
-      playSequence([[330, 0, 0.06], [494, 0.07, 0.08], [660, 0.16, 0.1]], MASTER_VOLUME);
+      gameAudio.playEventSound("ghost-eaten");
     }
 
     function playDeathSound() {
-      if (!soundEnabled) return;
-      playSequence([[392, 0, 0.09], [330, 0.1, 0.09], [262, 0.2, 0.12], [196, 0.34, 0.18]], MASTER_VOLUME);
+      gameAudio.playEventSound("death");
     }
 
     function playLevelClearSound() {
-      if (!soundEnabled) return;
-      playSequence([[523, 0, 0.07], [659, 0.08, 0.07], [784, 0.16, 0.07], [1047, 0.26, 0.16]], MASTER_VOLUME * 0.9);
+      gameAudio.playEventSound("level-clear");
     }
 
     function saveSoundPreference() {
@@ -869,59 +983,39 @@
       return musicEnabled && state === "playing" && !paused;
     }
 
-    function computeThreatLevel() {
-      if (!player || !ghosts) return 0;
-      let threat = 0;
-      const dangerousGhosts = ghosts.filter(g => g.state !== "eaten" && g.state !== "home" && !(frightenedTimer > 0 && g.state === "normal"));
-      for (const g of dangerousGhosts) {
-        const tileDistance = Math.hypot(player.x - g.x, player.y - g.y) / TILE;
-        threat = Math.max(threat, 1 - Math.min(tileDistance, 9) / 9);
-      }
-
-      if (frightenedTimer > 0) {
-        threat = Math.max(threat, 1 - Math.min(1, frightenedTimer / 2));
-      }
-
-      const pelletPressure = 1 - Math.min(1, pelletsRemaining / 60);
-      threat = Math.max(threat, pelletPressure * 0.45);
-
+    function currentAudioFacts() {
       const modeCycle = modeCycleFor(activeGameplayMode, level);
-      if (modeCycle[modeIndex].mode === "chase") threat += 0.18;
-      if (dangerousGhosts.some(g => oldLikeElroyStage(g))) threat += 0.16;
+      return {
+        player,
+        ghosts,
+        frightenedTimer,
+        pelletsRemaining,
+        ghostMode: modeCycle[modeIndex].mode
+      };
+    }
 
-      return Math.max(0, Math.min(1, threat));
+    function computeThreatLevel(facts = currentAudioFacts()) {
+      return gameAudio.computeThreatLevel(facts);
     }
 
     function musicPulseInterval(threat) {
-      if (frightenedTimer > 0) return frightenedTimer < 2 ? 0.22 : 0.34;
-      return 0.62 - threat * 0.38;
+      return gameAudio.musicPulseInterval(threat, currentAudioFacts());
     }
 
     function previewMusic() {
-      if (!musicEnabled) return;
-      playMusicTone(147, 0, 0.055, MUSIC_VOLUME);
-      playMusicTone(220, 0.08, 0.06, MUSIC_VOLUME * 0.8);
+      gameAudio.previewMusic();
     }
 
     function playMusicPulse(threat = computeThreatLevel()) {
-      if (!musicEnabled) return;
-      if (frightenedTimer > 0) {
-        const frequency = musicPulseIndex % 2 === 0 ? 196 : 247;
-        playMusicTone(frequency, 0, 0.045, MUSIC_VOLUME * 0.75);
-      } else {
-        const base = threat > 0.65 ? 165 : threat > 0.35 ? 147 : 123;
-        playMusicTone(musicPulseIndex % 2 === 0 ? base : base * 1.25, 0, 0.04, MUSIC_VOLUME);
-        if (threat > 0.72) playMusicTone(base * 1.5, 0.055, 0.03, MUSIC_VOLUME * 0.72);
-      }
-      musicPulseIndex++;
+      gameAudio.playMusicPulse(threat, currentAudioFacts());
     }
 
     function startMusicLoop() {
-      musicTimer = 0;
+      gameAudio.startMusic();
     }
 
     function stopMusicLoop() {
-      musicTimer = 0;
+      gameAudio.stopMusic();
     }
 
     function updateMusicLoop(dt) {
@@ -929,11 +1023,7 @@
         stopMusicLoop();
         return;
       }
-      musicTimer -= dt;
-      if (musicTimer > 0) return;
-      const threat = computeThreatLevel();
-      playMusicPulse(threat);
-      musicTimer = musicPulseInterval(threat);
+      gameAudio.updateMusic(dt, currentAudioFacts());
     }
 
     function toggleMusic() {

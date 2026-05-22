@@ -1920,19 +1920,6 @@
     let restartPressTimer = null;
     let restartPressButton = null;
 
-    function applyTouchDirection(directionName) {
-      const dir = DIRS[directionName];
-      if (dir) setDirection(dir);
-    }
-
-    function applyTouchAction(actionName) {
-      if (actionName === "pause") {
-        unlockAudio();
-        if (state === "title" || state === "gameover") newGame();
-        else togglePause();
-      }
-    }
-
     function triggerTouchFeedback(pattern = 12) {
       if (typeof navigator.vibrate !== "function") return;
       navigator.vibrate(pattern);
@@ -1971,6 +1958,101 @@
       heldDirectionButton = null;
     }
 
+    const swipeThreshold = 12;
+    let touchStart = null;
+
+    const touchSteering = {
+      applyDirection(direction) {
+        if (!direction) return;
+        setDirection(direction);
+      },
+
+      applyDirectionName(directionName) {
+        this.applyDirection(DIRS[directionName]);
+      },
+
+      startGameIfNeeded() {
+        if (state === "title" || state === "gameover") newGame();
+      },
+
+      applyAction(actionName) {
+        if (actionName === "pause") {
+          unlockAudio();
+          this.startGameIfNeeded();
+          if (state === "playing" || state === "ready") togglePause();
+        }
+      },
+
+      shouldHandlePointer(event) {
+        const target = event.target;
+        if (!(target instanceof Element)) return false;
+        if (target.closest("button, a, input, textarea, select")) return false;
+        return event.pointerType !== "mouse" || target === canvas;
+      },
+
+      directionFromSwipeDelta(dx, dy) {
+        if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? DIRS.left : DIRS.right;
+        return dy < 0 ? DIRS.up : DIRS.down;
+      },
+
+      directionFromCanvasTap(event) {
+        if (!player) return null;
+        const rect = canvas.getBoundingClientRect();
+        const tapX = (event.clientX - rect.left) * (canvas.width / rect.width);
+        const tapY = (event.clientY - rect.top) * (canvas.height / rect.height);
+        const dx = tapX - player.x;
+        const dy = tapY - (HUD + player.y);
+        if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? DIRS.left : DIRS.right;
+        return dy < 0 ? DIRS.up : DIRS.down;
+      },
+
+      applySwipeDirection(direction) {
+        if (!direction) return;
+        this.startGameIfNeeded();
+        this.applyDirection(direction);
+      },
+
+      handleSwipeMove(event) {
+        handlePageSwipeMove(event);
+      },
+
+      beginPointer(event) {
+        event.preventDefault();
+        unlockAudio();
+        touchStart = {
+          x: event.clientX,
+          y: event.clientY,
+          target: event.target,
+          moved: false,
+        };
+        if (event.target === canvas && canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+        if (event.target === canvas) this.startGameIfNeeded();
+      },
+
+      movePointer(event) {
+        if (!touchStart) return;
+        this.handleSwipeMove(event);
+      },
+
+      endPointer(event) {
+        if (!touchStart) return;
+        const swipeStartedOnCanvas = touchStart.target === canvas;
+        handlePageSwipeMove(event);
+        if (touchStart.target === canvas && !touchStart.moved) {
+          applyPageSwipeDirection(directionFromCanvasTap(event));
+          touchStart = null;
+          return;
+        }
+        if (swipeStartedOnCanvas && (state === "title" || state === "gameover")) newGame();
+        touchStart = null;
+      },
+
+      cancelPointer(event) {
+        if (touchStart) event.preventDefault();
+        touchStart = null;
+      }
+    };
+
     if (touchControls) {
       touchControls.addEventListener("pointerdown", event => {
         unlockAudio();
@@ -1984,7 +2066,7 @@
             startRestartPress(actionButton);
             return;
           }
-          applyTouchAction(actionName);
+          touchSteering.applyAction(actionName);
           return;
         }
 
@@ -1996,11 +2078,11 @@
         stopHoldingDirection();
 
         const directionName = directionButton.dataset.direction;
-        applyTouchDirection(directionName);
+        touchSteering.applyDirectionName(directionName);
         heldDirectionButton = directionButton;
         heldDirectionButton.classList.add("is-held");
         heldDirectionButton.setAttribute("aria-pressed", "true");
-        holdRepeatId = setInterval(() => applyTouchDirection(directionName), 95);
+        holdRepeatId = setInterval(() => touchSteering.applyDirectionName(directionName), 95);
 
         if (directionButton.setPointerCapture) {
           directionButton.setPointerCapture(event.pointerId);
@@ -2072,29 +2154,15 @@
     }, { passive: false });
 
     function shouldHandlePageSwipe(event) {
-      const target = event.target;
-      if (!(target instanceof Element)) return false;
-      if (target.closest("button, a, input, textarea, select")) return false;
-      return event.pointerType !== "mouse" || target === canvas;
+      return touchSteering.shouldHandlePointer(event);
     }
 
-    const swipeThreshold = 12;
-    let touchStart = null;
-
     function directionFromSwipeDelta(dx, dy) {
-      if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? DIRS.left : DIRS.right;
-      return dy < 0 ? DIRS.up : DIRS.down;
+      return touchSteering.directionFromSwipeDelta(dx, dy);
     }
 
     function directionFromCanvasTap(event) {
-      if (!player) return null;
-      const rect = canvas.getBoundingClientRect();
-      const tapX = (event.clientX - rect.left) * (canvas.width / rect.width);
-      const tapY = (event.clientY - rect.top) * (canvas.height / rect.height);
-      const dx = tapX - player.x;
-      const dy = tapY - (HUD + player.y);
-      if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? DIRS.left : DIRS.right;
-      return dy < 0 ? DIRS.up : DIRS.down;
+      return touchSteering.directionFromCanvasTap(event);
     }
 
     function applyPageSwipeDirection(direction) {
@@ -2118,39 +2186,21 @@
 
     document.addEventListener("pointerdown", event => {
       if (!shouldHandlePageSwipe(event)) return;
-      event.preventDefault();
-      unlockAudio();
-      touchStart = {
-        x: event.clientX,
-        y: event.clientY,
-        target: event.target,
-        moved: false,
-      };
-      if (event.target === canvas && canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
-      if (event.target === canvas && (state === "title" || state === "gameover")) newGame();
+      touchSteering.beginPointer(event);
     }, { passive: false });
 
     document.addEventListener("pointermove", event => {
       if (!touchStart) return;
-      handlePageSwipeMove(event);
+      touchSteering.movePointer(event);
     }, { passive: false });
 
     document.addEventListener("pointerup", event => {
       if (!touchStart) return;
-      const swipeStartedOnCanvas = touchStart.target === canvas;
-      handlePageSwipeMove(event);
-      if (touchStart.target === canvas && !touchStart.moved) {
-        applyPageSwipeDirection(directionFromCanvasTap(event));
-        touchStart = null;
-        return;
-      }
-      if (swipeStartedOnCanvas && (state === "title" || state === "gameover")) newGame();
-      touchStart = null;
+      touchSteering.endPointer(event);
     }, { passive: false });
 
     document.addEventListener("pointercancel", event => {
-      if (touchStart) event.preventDefault();
-      touchStart = null;
+      touchSteering.cancelPointer(event);
     }, { passive: false });
 
     // Draw a valid title screen before the first game starts. Without this,

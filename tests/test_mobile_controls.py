@@ -256,6 +256,44 @@ class MobileControlsTests(unittest.TestCase):
             "tap uses same title/gameover start-before-steer path",
         )
 
+    def test_touch_inputs_share_a_touch_steering_module(self):
+        assert_html_contains(self, r'const touchSteering = \{', "touch steering module exists")
+        assert_html_contains(
+            self,
+            r'touchSteering\s*=\s*\{[\s\S]*?applyDirection\(direction\)\s*\{[\s\S]*?setDirection\(direction\);',
+            "shared touch steering direction path reaches setDirection",
+        )
+        assert_html_contains(
+            self,
+            r'touchSteering\s*=\s*\{[\s\S]*?startGameIfNeeded\(\)\s*\{[\s\S]*?newGame\(\);',
+            "shared touch steering start path reaches newGame",
+        )
+        assert_html_contains(
+            self,
+            r'touchSteering\s*=\s*\{[\s\S]*?applyAction\(actionName\)\s*\{[\s\S]*?togglePause\(\);',
+            "shared touch steering action path reaches togglePause",
+        )
+        assert_html_contains(
+            self,
+            r'touchControls\.addEventListener\("pointerdown"[\s\S]*?touchSteering\.applyDirectionName\(directionName\);',
+            "D-pad routes into shared touch steering module",
+        )
+        assert_html_contains(
+            self,
+            r'document\.addEventListener\("pointerdown"[\s\S]*?touchSteering\.beginPointer\(event\);',
+            "page swipe pointer start routes into shared touch steering module",
+        )
+        assert_html_contains(
+            self,
+            r'document\.addEventListener\("pointermove"[\s\S]*?touchSteering\.movePointer\(event\);',
+            "page swipe pointer move routes into shared touch steering module",
+        )
+        assert_html_contains(
+            self,
+            r'document\.addEventListener\("pointerup"[\s\S]*?touchSteering\.endPointer\(event\);',
+            "page swipe pointer end routes into shared touch steering module",
+        )
+
 
 
 if __name__ == "__main__":

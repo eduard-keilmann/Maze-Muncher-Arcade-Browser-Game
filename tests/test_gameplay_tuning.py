@@ -218,11 +218,11 @@ class GameplayTuningTests(unittest.TestCase):
             "offscreen tunnel ghosts are pushed back toward the maze if direction was lost",
         )
 
-        decision_body = find_function_body("handleDecisionPoint")
+        tunnel_body = find_function_body("tunnelMovementDirection")
         self.assertRegex(
-            decision_body,
-            re.compile(r"const tunnelDir = tunnelContinuationDirection\(actor\);[\s\S]*?if \(tunnelDir\) \{[\s\S]*?actor\.dir = tunnelDir;[\s\S]*?return;[\s\S]*?\}[\s\S]*?actor\.dir = chooseGhostDirection\(actor\);"),
-            "Ghosts should keep tunnel continuation before normal target selection",
+            tunnel_body,
+            re.compile(r"return tunnelContinuationDirection\(actor\);"),
+            "Ghost tunnel movement should continue horizontally inside the side tunnel",
         )
 
     def test_tunnel_mouth_intersections_use_ghost_target_selection(self):
@@ -236,6 +236,27 @@ class GameplayTuningTests(unittest.TestCase):
             self,
             r"function isTunnelContinuationZone\(actor\)[\s\S]*?c < 6[\s\S]*?c >= COLS - 6",
             "tunnel continuation applies only after ghosts are inside the side tunnel",
+        )
+
+    def test_ghost_direction_uses_one_tunnel_aware_entry_point(self):
+        assert_html_contains(
+            self,
+            r"function chooseGhostMovementDirection\(g\)",
+            "ghost movement should have one tunnel-aware direction chooser",
+        )
+
+        chooser_body = find_function_body("chooseGhostMovementDirection")
+        self.assertRegex(
+            chooser_body,
+            re.compile(r"const tunnelDir = tunnelMovementDirection\(g\);[\s\S]*?if \(tunnelDir\) return tunnelDir;[\s\S]*?return chooseGhostTargetDirection\(g\);"),
+            "tunnel movement should stay behind one chooser before normal target direction",
+        )
+
+        decision_body = find_function_body("handleDecisionPoint")
+        self.assertRegex(
+            decision_body,
+            re.compile(r'actor\.dir = chooseGhostMovementDirection\(actor\);'),
+            "ghost decision points should use the shared tunnel-aware chooser",
         )
 
 
@@ -276,10 +297,10 @@ class GameplayTuningTests(unittest.TestCase):
             "ghosts must not choose the hidden dead-end direction from tunnel mouths",
         )
 
-        decision_body = find_function_body("handleDecisionPoint")
+        tunnel_body = find_function_body("tunnelMovementDirection")
         self.assertRegex(
-            decision_body,
-            re.compile(r"const deadEndDir = tunnelDeadEndEscapeDirection\(actor\);[\s\S]*?if \(deadEndDir\) \{[\s\S]*?actor\.dir = deadEndDir;[\s\S]*?return;"),
+            tunnel_body,
+            re.compile(r"const deadEndDir = tunnelDeadEndEscapeDirection\(actor\);[\s\S]*?if \(deadEndDir\) return deadEndDir;"),
             "Ghosts in hidden tunnel dead ends should be corrected before target selection",
         )
 

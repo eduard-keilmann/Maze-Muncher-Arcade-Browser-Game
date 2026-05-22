@@ -1224,6 +1224,12 @@
       return null;
     }
 
+    function tunnelMovementDirection(actor) {
+      const deadEndDir = tunnelDeadEndEscapeDirection(actor);
+      if (deadEndDir) return deadEndDir;
+      return tunnelContinuationDirection(actor);
+    }
+
     function oldLikeElroyStage(ghost) {
       if (activeGameplayMode.id !== "old-like") return null;
       if (ghost.name !== "red") return null;
@@ -1258,19 +1264,7 @@
           actor.dir = null;
         }
       } else {
-        const deadEndDir = tunnelDeadEndEscapeDirection(actor);
-        if (deadEndDir) {
-          actor.dir = deadEndDir;
-          return;
-        }
-
-        const tunnelDir = tunnelContinuationDirection(actor);
-        if (tunnelDir) {
-          actor.dir = tunnelDir;
-          return;
-        }
-
-        actor.dir = chooseGhostDirection(actor);
+        actor.dir = chooseGhostMovementDirection(actor);
         if (!canMove(actor, actor.dir, "ghost")) {
           actor.dir = null;
         }
@@ -1399,6 +1393,16 @@
         }
       }
       return best;
+    }
+
+    function chooseGhostTargetDirection(g) {
+      return chooseGhostDirection(g);
+    }
+
+    function chooseGhostMovementDirection(g) {
+      const tunnelDir = tunnelMovementDirection(g);
+      if (tunnelDir) return tunnelDir;
+      return chooseGhostTargetDirection(g);
     }
 
     function reverseNormalGhosts() {

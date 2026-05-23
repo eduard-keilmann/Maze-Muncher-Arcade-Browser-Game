@@ -817,6 +817,10 @@
           return;
         }
         if (eventName === "ghost-eaten") {
+          if (detail === 1600) {
+            this.playSequence([[659, 0, 0.06], [988, 0.07, 0.07], [1319, 0.15, 0.08], [1760, 0.24, 0.12]], MASTER_VOLUME);
+            return;
+          }
           this.playSequence([[330, 0, 0.06], [494, 0.07, 0.08], [660, 0.16, 0.1]], MASTER_VOLUME);
           return;
         }
@@ -937,8 +941,8 @@
       gameAudio.playEventSound("fruit");
     }
 
-    function playGhostEatenSound() {
-      gameAudio.playEventSound("ghost-eaten");
+    function playGhostEatenSound(points) {
+      gameAudio.playEventSound("ghost-eaten", points);
     }
 
     function playDeathSound() {
@@ -1728,7 +1732,7 @@
 
         if (g.state === "normal" && frightenedTimer > 0) {
           awardScore(ghostEatValue);
-          playGhostEatenSound();
+          playGhostEatenSound(ghostEatValue);
           messages.push({ text: String(ghostEatValue), x: g.x, y: HUD + g.y - 10, time: 0.9, life: 0.9, size: 16 });
           ghostEatValue = Math.min(1600, ghostEatValue * 2);
           g.state = "eaten";

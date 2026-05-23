@@ -684,6 +684,7 @@ class GameplayTuningTests(unittest.TestCase):
         )
         self.assertIsNotNone(edible_branch, "Missing edible ghost collision branch")
         self.assertRegex(edible_branch.group("body"), re.compile(r"awardScore\(ghostEatValue\)"), "Ghost combo score should be inside edible state")
+        self.assertRegex(edible_branch.group("body"), re.compile(r"playGhostEatenSound\(ghostEatValue\)"), "Ghost combo sound should receive the current combo value")
         self.assertRegex(edible_branch.group("body"), re.compile(r"ghostEatValue = Math\.min\(1600,\s*ghostEatValue \* 2\)"), "Ghost combo should advance only inside edible state")
 
         normal_hit = re.search(

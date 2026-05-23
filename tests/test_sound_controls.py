@@ -46,11 +46,17 @@ class SoundControlsTests(unittest.TestCase):
             "playPelletSound(cell)": "pellet and power pellet tick",
             "playLevelClearSound()": "level clear flourish",
             "playFruitSound()": "fruit bonus sound",
-            "playGhostEatenSound()": "ghost eaten sound",
+            "playGhostEatenSound(points)": "ghost eaten sound",
             "playDeathSound()": "death sound",
         }
         for call, description in expected_calls.items():
             assert_html_contains(self, re.escape(call), description)
+
+        assert_html_contains(
+            self,
+            r'if \(eventName === "ghost-eaten"\) \{[\s\S]*?if \(detail === 1600\) \{',
+            "ghost eaten sound has a special 1600-point variant",
+        )
 
     def test_sound_toggle_gives_audible_preview_when_turning_sound_on(self):
         assert_html_contains(self, r"const MASTER_VOLUME = 0\.0336;", "sound effects use the previous quiet threat-music volume")

@@ -20,12 +20,12 @@ Possible first behavior seams:
 
 ## Acceptance criteria
 
-- [ ] At least one deepened Module has tests that verify behavior through its interface rather than only source regex.
-- [ ] Existing important page-contract tests remain covered.
-- [ ] No browser automation dependency is added unless the existing browser-interaction test decision is explicitly reopened.
-- [ ] Test names use project domain language from `CONTEXT.md`.
-- [ ] Tests stay deterministic and readable.
-- [ ] Full test suite passes.
+- [x] At least one deepened Module has tests that verify behavior through its interface rather than only source regex.
+- [x] Existing important page-contract tests remain covered.
+- [x] No browser automation dependency is added unless the existing browser-interaction test decision is explicitly reopened.
+- [x] Test names use project domain language from `CONTEXT.md`.
+- [x] Tests stay deterministic and readable.
+- [x] Full test suite passes.
 
 ## Blocked by
 
@@ -36,3 +36,9 @@ Possible first behavior seams:
   - `issues/020-deepen-touch-steering.md`
   - `issues/021-deepen-generated-audio-and-threat-music.md`
   - `issues/022-deepen-game-lifecycle-and-scoring.md`
+
+## Completed note
+
+- Added `tests/test_audio_behavior_seams.py` as the first executable behavior-seam test path.
+- The new tests run extracted `gameAudio` behavior through `node` without adding repo dependencies or browser automation.
+- `tests/test_sound_controls.py` now keeps static page-contract and wiring checks, while threat scoring details moved to behavior assertions.

@@ -62,8 +62,8 @@ class GameplayTuningTests(unittest.TestCase):
     def test_maze_muncher_tuning_preserves_existing_formulas(self):
         assert_html_contains(self, r'GAMEPLAY_TUNING\s*=\s*\{', "gameplay tuning registry")
         assert_html_contains(self, r'"maze-muncher":\s*\{', "Maze Muncher tuning block")
-        assert_html_contains(self, r"playerSpeed:\s*\(level\)\s*=>\s*Math\.min\(117\.6,\s*94\.5 \+ level \* 2\.625\)", "current player speed formula")
-        assert_html_contains(self, r"ghostSpeed:\s*\(level\)\s*=>\s*Math\.min\(113\.4,\s*81\.9 \+ level \* 2\.73\)", "current ghost speed formula")
+        assert_html_contains(self, r"playerSpeed:\s*\(level\)\s*=>\s*Math\.min\(123\.48,\s*99\.225 \+ level \* 2\.75625\)", "current player speed formula")
+        assert_html_contains(self, r"ghostSpeed:\s*\(level\)\s*=>\s*Math\.min\(119\.07,\s*85\.995 \+ level \* 2\.8665\)", "current ghost speed formula")
         assert_html_contains(self, r"frightenedTime:\s*\(level\)\s*=>\s*Math\.max\(4\.2,\s*7\.5 - level \* 0\.25\)", "current frightened-time formula")
         assert_html_contains(self, r"fruitValue:\s*\(level,\s*mark\)\s*=>\s*Math\.min\(5000,\s*100 \+ level \* 100 \+ mark\)", "current fruit value formula")
         assert_html_contains(self, r"ghostReleaseBase:\s*\(level\)\s*=>\s*Math\.max\(0,\s*2\.5 - level \* 0\.15\)", "current ghost release formula")
@@ -71,11 +71,11 @@ class GameplayTuningTests(unittest.TestCase):
 
     def test_old_like_speed_bands_get_small_uniform_five_percent_bump(self):
         for band, player_speed, ghost_speed in [
-            ("level-1", 92.4, 86.1),
-            ("levels-2-4", 98.7, 92.4),
-            ("levels-5-8", 104, 100.8),
-            ("levels-9-16", 108.2, 108.2),
-            ("levels-17-plus", 111.3, 113.4),
+            ("level-1", 97.02, 90.405),
+            ("levels-2-4", 103.635, 97.02),
+            ("levels-5-8", 109.2, 105.84),
+            ("levels-9-16", 113.61, 113.61),
+            ("levels-17-plus", 116.865, 119.07),
         ]:
             assert_html_contains(
                 self,

@@ -549,36 +549,36 @@
 
     const OLD_LIKE_LEVEL_BANDS = {
       "level-1": {
-        playerSpeed: 88,
-        ghostSpeed: 82,
+        playerSpeed: 92.4,
+        ghostSpeed: 86.1,
         frightenedTime: 7,
         ghostReleaseBase: 2.1,
         tunnelGhostSpeedMultiplier: 0.52
       },
       "levels-2-4": {
-        playerSpeed: 94,
-        ghostSpeed: 88,
+        playerSpeed: 98.7,
+        ghostSpeed: 92.4,
         frightenedTime: 6,
         ghostReleaseBase: 1.8,
         tunnelGhostSpeedMultiplier: 0.55
       },
       "levels-5-8": {
-        playerSpeed: 99,
-        ghostSpeed: 96,
+        playerSpeed: 104,
+        ghostSpeed: 100.8,
         frightenedTime: 3.5,
         ghostReleaseBase: 1.2,
         tunnelGhostSpeedMultiplier: 0.58
       },
       "levels-9-16": {
-        playerSpeed: 103,
-        ghostSpeed: 103,
+        playerSpeed: 108.2,
+        ghostSpeed: 108.2,
         frightenedTime: 2,
         ghostReleaseBase: 0.7,
         tunnelGhostSpeedMultiplier: 0.62
       },
       "levels-17-plus": {
-        playerSpeed: 106,
-        ghostSpeed: 108,
+        playerSpeed: 111.3,
+        ghostSpeed: 113.4,
         frightenedTime: 0,
         ghostReleaseBase: 0.3,
         tunnelGhostSpeedMultiplier: 0.65
@@ -609,8 +609,8 @@
 
     const GAMEPLAY_TUNING = {
       "maze-muncher": {
-        playerSpeed: (level) => Math.min(112, 90 + level * 2.5),
-        ghostSpeed: (level) => Math.min(108, 78 + level * 2.6),
+        playerSpeed: (level) => Math.min(117.6, 94.5 + level * 2.625),
+        ghostSpeed: (level) => Math.min(113.4, 81.9 + level * 2.73),
         frightenedTime: (level) => Math.max(4.2, 7.5 - level * 0.25),
         fruitName: () => "cherry",
         fruitValue: (level, mark) => Math.min(5000, 100 + level * 100 + mark),

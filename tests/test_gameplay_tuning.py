@@ -62,12 +62,26 @@ class GameplayTuningTests(unittest.TestCase):
     def test_maze_muncher_tuning_preserves_existing_formulas(self):
         assert_html_contains(self, r'GAMEPLAY_TUNING\s*=\s*\{', "gameplay tuning registry")
         assert_html_contains(self, r'"maze-muncher":\s*\{', "Maze Muncher tuning block")
-        assert_html_contains(self, r"playerSpeed:\s*\(level\)\s*=>\s*Math\.min\(112,\s*90 \+ level \* 2\.5\)", "current player speed formula")
-        assert_html_contains(self, r"ghostSpeed:\s*\(level\)\s*=>\s*Math\.min\(108,\s*78 \+ level \* 2\.6\)", "current ghost speed formula")
+        assert_html_contains(self, r"playerSpeed:\s*\(level\)\s*=>\s*Math\.min\(117\.6,\s*94\.5 \+ level \* 2\.625\)", "current player speed formula")
+        assert_html_contains(self, r"ghostSpeed:\s*\(level\)\s*=>\s*Math\.min\(113\.4,\s*81\.9 \+ level \* 2\.73\)", "current ghost speed formula")
         assert_html_contains(self, r"frightenedTime:\s*\(level\)\s*=>\s*Math\.max\(4\.2,\s*7\.5 - level \* 0\.25\)", "current frightened-time formula")
         assert_html_contains(self, r"fruitValue:\s*\(level,\s*mark\)\s*=>\s*Math\.min\(5000,\s*100 \+ level \* 100 \+ mark\)", "current fruit value formula")
         assert_html_contains(self, r"ghostReleaseBase:\s*\(level\)\s*=>\s*Math\.max\(0,\s*2\.5 - level \* 0\.15\)", "current ghost release formula")
         assert_html_contains(self, r"modeCycle:\s*\(\)\s*=>\s*MODE_CYCLE", "current scatter/chase cycle")
+
+    def test_old_like_speed_bands_get_small_uniform_five_percent_bump(self):
+        for band, player_speed, ghost_speed in [
+            ("level-1", 92.4, 86.1),
+            ("levels-2-4", 98.7, 92.4),
+            ("levels-5-8", 104, 100.8),
+            ("levels-9-16", 108.2, 108.2),
+            ("levels-17-plus", 111.3, 113.4),
+        ]:
+            assert_html_contains(
+                self,
+                rf'"{band}":\s*\{{[\s\S]*?playerSpeed:\s*{player_speed}[\s\S]*?ghostSpeed:\s*{ghost_speed}',
+                f"Old-like {band} speeds keep the tuned 5 percent increase",
+            )
 
     def test_old_like_mode_cycles_use_level_bands_and_get_more_chase_heavy(self):
         assert_html_contains(self, r"OLD_LIKE_MODE_CYCLES\s*=\s*\{", "Old-like mode-cycle table")

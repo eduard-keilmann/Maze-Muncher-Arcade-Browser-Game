@@ -16,7 +16,7 @@ Evaluate landscape phone play after baseline QA and portrait tuning. If landscap
 
 ## Acceptance criteria
 
-- [ ] Landscape behavior is tested on real mobile devices.
+- [x] Landscape behavior is tested on real mobile devices.
 - [x] Decision is recorded: no landscape-specific layout needed, or landscape layout required.
 - [x] If required, landscape layout keeps controls reachable without covering the canvas.
 - [x] If required, landscape layout avoids gameplay-disrupting page scroll.

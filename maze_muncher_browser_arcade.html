@@ -1910,7 +1910,7 @@
 
     function drawPlayer() {
       const dir = player.dir || player.lastDir || DIRS.left;
-      const pulse = (Math.sin(performance.now() / (70 / 1.05)) + 1) / 2;
+      const pulse = (Math.sin(performance.now() / (70 / 1.09)) + 1) / 2;
       const mouth = 0.12 + pulse * 0.33;
       const a = dir.angle;
 

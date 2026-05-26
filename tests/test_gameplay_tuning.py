@@ -83,6 +83,14 @@ class GameplayTuningTests(unittest.TestCase):
                 f"Old-like {band} speeds keep the tuned 5 percent increase",
             )
 
+    def test_muncher_mouth_animation_rate_is_tuned(self):
+        draw_body = find_function_body("drawPlayer")
+        self.assertRegex(
+            draw_body,
+            re.compile(r"Math\.sin\(performance\.now\(\) / \(70 / 1\.09\)\)"),
+            "Muncher mouth animation should open and close another 1% faster",
+        )
+
     def test_old_like_mode_cycles_use_level_bands_and_get_more_chase_heavy(self):
         assert_html_contains(self, r"OLD_LIKE_MODE_CYCLES\s*=\s*\{", "Old-like mode-cycle table")
         assert_html_contains(

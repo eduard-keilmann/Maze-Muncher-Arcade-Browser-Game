@@ -622,7 +622,7 @@
       "old-like": {
         playerSpeed: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].playerSpeed,
         ghostSpeed: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostSpeed,
-        frightenedTime: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime,
+        frightenedTime: (level) => oldLikeFrightenedTimeFor(level),
         fruitName: (level) => oldLikeFruitFor(level).name,
         fruitValue: (level) => oldLikeFruitFor(level).value,
         ghostReleaseBase: (level) => OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].ghostReleaseBase,
@@ -664,6 +664,12 @@
 
     function frightenedTimeFor(mode, level) {
       return getGameplayTuning(mode, level).frightenedTime(level);
+    }
+
+    function oldLikeFrightenedTimeFor(level) {
+      if (level <= 1) return 8;
+      if (level <= 5) return level === 5 ? 4 : 6.5;
+      return OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime;
     }
 
     function fruitValueFor(mode, level, mark) {

@@ -137,19 +137,21 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"tunnelGhostSpeedMultiplier:\s*0\.[0-9]+", "Old-like tunnel slowdown tuning exists")
 
 
-    def test_old_like_power_mode_duration_gets_one_second_tuning_boost(self):
-        for band, seconds in [
-            ("level-1", 7),
-            ("levels-2-4", 6),
-            ("levels-5-8", 3.5),
-            ("levels-9-16", 2),
-            ("levels-17-plus", 0),
+    def test_old_like_power_mode_duration_boosts_only_levels_1_to_5(self):
+        for pattern, label in [
+            (r"function oldLikeFrightenedTimeFor\(level\)\s*\{", "Old-like frightened-time helper exists"),
+            (r"if\s*\(level <= 1\)\s*return\s*8;", "level 1 gets +1 second"),
+            (r"if\s*\(level <= 5\)\s*return\s*level === 5 \? 4 : 6\.5;", "levels 2 to 5 get +0.5 seconds"),
+            (
+                r"return\s+OLD_LIKE_LEVEL_BANDS\[levelBandFor\(level\)\]\.frightenedTime;",
+                "later levels fall back to unchanged band values",
+            ),
+            (
+                r"frightenedTime:\s*\(level\)\s*=>\s*oldLikeFrightenedTimeFor\(level\)",
+                "Old-like tuning uses the helper",
+            ),
         ]:
-            assert_html_contains(
-                self,
-                rf'"{band}":\s*\{{[\s\S]*?frightenedTime:\s*{seconds}',
-                f"Old-like {band} frightened time",
-            )
+            assert_html_contains(self, pattern, label)
 
     def test_old_like_fruit_names_and_values_follow_original_like_sequence(self):
         assert_html_contains(self, r"OLD_LIKE_FRUIT_SEQUENCE\s*=\s*\[", "Old-like fruit sequence")

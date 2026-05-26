@@ -215,7 +215,7 @@ class GameplayTuningTests(unittest.TestCase):
         )
         self.assertRegex(
             actor_body,
-            re.compile(r'frightenedTimer > 0 && actor\.state === "normal"[\s\S]*?speed = normal \* 0\.635'),
+            re.compile(r'frightenedTimer > 0 && actor\.state === "normal"[\s\S]*?speed = normal \* 0\.625'),
             "Frightened normal ghosts should move 5% slower than the previous frightened speed",
         )
         self.assertRegex(

@@ -97,6 +97,37 @@ class AudioBehaviorSeamTests(unittest.TestCase):
         self.assertLessEqual(result["nearbyChase"], 1)
         self.assertGreaterEqual(result["farScatter"], 0)
 
+    def test_near_ghost_threat_range_starts_farther_and_pulses_faster(self):
+        result = run_audio_behavior(
+            """
+            const barelyNear = gameAudio.computeThreatLevel({
+              player: { x: 8 * TILE, y: 8 * TILE },
+              ghosts: [{ x: 17.5 * TILE, y: 8 * TILE, state: "normal" }],
+              frightenedTimer: 0,
+              pelletsRemaining: 60,
+              ghostMode: "scatter"
+            });
+
+            const far = gameAudio.computeThreatLevel({
+              player: { x: 8 * TILE, y: 8 * TILE },
+              ghosts: [{ x: 18.1 * TILE, y: 8 * TILE, state: "normal" }],
+              frightenedTimer: 0,
+              pelletsRemaining: 60,
+              ghostMode: "scatter"
+            });
+
+            const pulse = gameAudio.musicPulseInterval(0.5, {
+              frightenedTimer: 0
+            });
+
+            return { barelyNear, far, pulse };
+            """
+        )
+
+        self.assertGreater(result["barelyNear"], 0)
+        self.assertEqual(result["far"], 0)
+        self.assertAlmostEqual(result["pulse"], (0.62 - 0.5 * 0.38) / 1.05)
+
     def test_frightened_time_near_expiry_keeps_threat_music_tense(self):
         result = run_audio_behavior(
             """

@@ -856,7 +856,8 @@
         const dangerousGhosts = facts.ghosts.filter(g => g.state !== "eaten" && g.state !== "home" && !(facts.frightenedTimer > 0 && g.state === "normal"));
         for (const g of dangerousGhosts) {
           const tileDistance = Math.hypot(facts.player.x - g.x, facts.player.y - g.y) / TILE;
-          threat = Math.max(threat, 1 - Math.min(tileDistance, 9) / 9);
+          const threatRangeTiles = 9.9;
+          threat = Math.max(threat, 1 - Math.min(tileDistance, threatRangeTiles) / threatRangeTiles);
         }
 
         if (facts.frightenedTimer > 0) {
@@ -874,7 +875,7 @@
 
       musicPulseInterval(threat, facts) {
         if (facts.frightenedTimer > 0) return facts.frightenedTimer < 2 ? 0.22 : 0.34;
-        return 0.62 - threat * 0.38;
+        return (0.62 - threat * 0.38) / 1.05;
       },
 
       playMusicPulse(threat, facts) {

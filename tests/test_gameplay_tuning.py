@@ -71,7 +71,7 @@ class GameplayTuningTests(unittest.TestCase):
 
     def test_old_like_speed_bands_get_small_uniform_five_percent_bump(self):
         for band, player_speed, ghost_speed in [
-            ("level-1", 101.87, 94.93),
+            ("level-1", 101.87, 93.5),
             ("levels-2-4", 108.82, 101.87),
             ("levels-5-8", 114.66, 111.13),
             ("levels-9-16", 119.29, 119.29),

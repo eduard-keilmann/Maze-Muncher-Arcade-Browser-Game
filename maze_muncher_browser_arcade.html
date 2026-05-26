@@ -1475,7 +1475,7 @@
       if (actor.state === "eaten") return Math.min(160, normal * 1.85);
       if (actor.state === "leaving") return normal * 0.96;
       let speed = normal;
-      if (frightenedTimer > 0 && actor.state === "normal") speed = normal * 0.625;
+      if (frightenedTimer > 0 && actor.state === "normal") speed = normal * 0.55;
       const elroy = oldLikeElroyStage(actor);
       if (elroy) speed *= elroy.speedMultiplier;
       if (actor.state === "normal" && isTunnelSide(actor)) {

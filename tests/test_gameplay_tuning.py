@@ -215,6 +215,11 @@ class GameplayTuningTests(unittest.TestCase):
         )
         self.assertRegex(
             actor_body,
+            re.compile(r'frightenedTimer > 0 && actor\.state === "normal"[\s\S]*?speed = normal \* 0\.646'),
+            "Frightened normal ghosts should move 5% slower than the previous frightened speed",
+        )
+        self.assertRegex(
+            actor_body,
             re.compile(r"tunnelGhostSpeedMultiplierFor\(activeGameplayMode,\s*level\)"),
             "Normal ghost speed should use mode-aware tunnel multiplier",
         )

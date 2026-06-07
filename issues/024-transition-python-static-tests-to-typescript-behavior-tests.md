@@ -1,4 +1,4 @@
-## What to build
+## What to build (rejected/suspended for now!)
 
 Start the transition from Python regex/static tests to TypeScript behavior tests with one narrow, complete tracer bullet.
 

@@ -27,6 +27,7 @@ The game runs directly in a modern browser.
 - Four ghosts with chase, scatter, frightened, home, and eaten states.
 - Power pellets turn chase pressure around. In late Old-like levels they can reverse ghosts without making them edible.
 - Score, high score, lives, levels, pause, ready, death, game-over states, generated arcade-style sound effects, and quiet threat-reactive music.
+- Optional online high scores: when API and Redis are configured, each gameplay mode has its own public top 100. Without that API, the game keeps its existing local high-score behavior.
 - Works on desktop and touch screens.
 
 ## Controls
@@ -70,6 +71,26 @@ The repo uses dependency-free Python tests for the static HTML contract:
 ```sh
 python -B -m unittest discover tests
 ```
+
+The Redis-backed API tests use Node's built-in test runner:
+
+```sh
+node --test tests/leaderboard_api.test.cjs
+```
+
+## Optional Online High Scores
+
+The static game remains deployable on GitHub Pages. The optional API lives in `api/leaderboard.js` and is deployed as the separate Vercel project `maze-muncher-leaderboard`.
+
+1. Create an Upstash Redis database and copy its REST URL and standard REST token.
+2. Import this repository as a Vercel project named `maze-muncher-leaderboard`; leave its root directory at the repository root.
+3. Add these Vercel environment variables:
+   - `UPSTASH_REDIS_REST_URL`
+   - `UPSTASH_REDIS_REST_TOKEN`
+   - `LEADERBOARD_RATE_LIMIT_SALT` — a private random value used only for daily rate-limit hashes.
+4. Deploy. The game calls `https://maze-muncher-leaderboard.vercel.app/api/leaderboard`.
+
+The endpoint permits requests from the GitHub Pages origin and `http://localhost:<port>` for local development. Run `npx vercel dev` when testing the API locally; no Redis, Docker, or project dependency is required on the development machine when using the Upstash development database.
 
 ## Project Notes
 

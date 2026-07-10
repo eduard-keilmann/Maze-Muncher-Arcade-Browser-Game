@@ -110,6 +110,24 @@
       letter-spacing: 0;
     }
 
+    .leaderboard-dialog {
+      width: min(92vw, 430px);
+      border: 1px solid #3946d8;
+      border-radius: 12px;
+      background: #09091a;
+      color: #f9f7d7;
+      font: 0.9rem/1.4 ui-monospace, Menlo, monospace;
+    }
+
+    .leaderboard-dialog::backdrop { background: rgba(0, 0, 0, 0.72); }
+    .leaderboard-dialog h2 { margin: 0 0 10px; color: #ffe85a; font-size: 1rem; }
+    .leaderboard-dialog ol { max-height: 45svh; margin: 0; padding-left: 2.4em; overflow: auto; }
+    .leaderboard-dialog li { padding: 3px 0; }
+    .leaderboard-entry-score { float: right; color: #fff7a5; }
+    .leaderboard-dialog form { display: grid; gap: 8px; margin-top: 16px; }
+    .leaderboard-dialog input { min-width: 0; padding: 8px; border: 1px solid #3946d8; border-radius: 6px; background: #000; color: #fff; font: inherit; }
+    .leaderboard-dialog menu { display: flex; justify-content: end; gap: 8px; margin: 16px 0 0; padding: 0; }
+
     kbd {
       color: #fff;
       background: #1b1b36;
@@ -372,6 +390,7 @@
       <button class="mode-button" type="button" data-action="music" aria-label="Music" aria-pressed="true">
         <span data-music-label>MUSIC: ON</span>
       </button>
+      <button class="mode-button" type="button" data-action="leaderboard" aria-label="Online highscores" hidden>ONLINE HIGHSCORES</button>
     </section>
     <div class="frame">
       <canvas id="game" width="560" height="712" aria-label="Maze chase arcade game canvas"></canvas>
@@ -407,6 +426,17 @@
     </p>
   </main>
 
+  <dialog class="leaderboard-dialog" aria-labelledby="leaderboard-title">
+    <h2 id="leaderboard-title">ONLINE HIGHSCORES</h2>
+    <ol data-leaderboard-list></ol>
+    <form data-leaderboard-score-form hidden>
+      <label for="leaderboard-name">Enter your name</label>
+      <input id="leaderboard-name" name="name" maxlength="20" autocomplete="nickname" required />
+      <button class="mode-button" type="submit">SAVE SCORE</button>
+    </form>
+    <menu><button class="mode-button" type="button" data-action="close-leaderboard">CLOSE</button></menu>
+  </dialog>
+
   <script>
   (() => {
     "use strict";
@@ -419,6 +449,11 @@
     const soundLabel = document.querySelector("[data-sound-label]");
     const musicButton = document.querySelector('[data-action="music"]');
     const musicLabel = document.querySelector("[data-music-label]");
+    const leaderboardButton = document.querySelector('[data-action="leaderboard"]');
+    const leaderboardDialog = document.querySelector(".leaderboard-dialog");
+    const leaderboardList = document.querySelector("[data-leaderboard-list]");
+    const leaderboardScoreForm = document.querySelector("[data-leaderboard-score-form]");
+    const leaderboardNameInput = document.querySelector("#leaderboard-name");
 
     const TILE = 20;
     const COLS = 28;
@@ -435,6 +470,7 @@
     const GAMEPLAY_MODE_STORAGE_KEY = "mazeMuncherGameplayMode";
     const SOUND_STORAGE_KEY = "mazeMuncherSoundEnabled";
     const MUSIC_STORAGE_KEY = "mazeMuncherMusicEnabled";
+    const LEADERBOARD_API_URL = "https://maze-muncher-leaderboard.vercel.app";
     const DEFAULT_GAMEPLAY_MODE_ID = "old-like";
     const GAMEPLAY_MODES = [
       { id: "maze-muncher", label: "MODE: MAZE MUNCHER", footerLabel: "MAZE MUNCHER MODE", highScoreKey: "mazeMuncherHighScore" },
@@ -1070,9 +1106,76 @@
     let ghostEatValue = 200;
     let lastTime = performance.now();
     let messages = [];
+    let leaderboardAvailable = false;
+    let onlineEntries = [];
+    let currentRunId = null;
 
     let player;
     let ghosts;
+
+    async function leaderboardRequest(method, body) {
+      const url = method === "GET"
+        ? `${LEADERBOARD_API_URL}/api/leaderboard?mode=${encodeURIComponent(activeGameplayMode.id)}`
+        : `${LEADERBOARD_API_URL}/api/leaderboard`;
+      const response = await fetch(url, {
+        method,
+        headers: body ? { "Content-Type": "application/json" } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.timeout(1000)
+      });
+      if (!response.ok) throw new Error("Leaderboard unavailable");
+      return response.json();
+    }
+
+    function renderOnlineLeaderboard() {
+      leaderboardButton.hidden = !leaderboardAvailable;
+      leaderboardList.replaceChildren();
+      for (const entry of onlineEntries) {
+        const item = document.createElement("li");
+        const name = document.createElement("span");
+        const entryScore = document.createElement("span");
+        name.textContent = entry.name;
+        entryScore.className = "leaderboard-entry-score";
+        entryScore.textContent = String(entry.score);
+        item.append(name, entryScore);
+        leaderboardList.append(item);
+      }
+    }
+
+    async function refreshOnlineLeaderboard() {
+      try {
+        const result = await leaderboardRequest("GET");
+        onlineEntries = result.entries;
+        leaderboardAvailable = true;
+        renderOnlineLeaderboard();
+      } catch (_) {
+        leaderboardAvailable = false;
+        currentRunId = null;
+        leaderboardButton.hidden = !leaderboardAvailable;
+        if (leaderboardDialog.open) leaderboardDialog.close();
+      }
+    }
+
+    async function requestOnlineRunTicket() {
+      currentRunId = null;
+      if (!leaderboardAvailable) return;
+      try {
+        const result = await leaderboardRequest("POST", { action: "start", mode: activeGameplayMode.id });
+        currentRunId = result.runId;
+      } catch (_) {
+        leaderboardAvailable = false;
+        leaderboardButton.hidden = !leaderboardAvailable;
+      }
+    }
+
+    function offerOnlineScoreEntry() {
+      if (!leaderboardAvailable || !currentRunId) return;
+      if (onlineEntries.length >= 100 && score < onlineEntries[99].score) return;
+      leaderboardScoreForm.hidden = false;
+      leaderboardNameInput.value = "";
+      leaderboardDialog.showModal();
+      leaderboardNameInput.focus();
+    }
 
     function cloneMap() {
       return BASE_MAP.map(row => row.split(""));
@@ -1260,6 +1363,7 @@
           state = "gameover";
           this.setHighScore();
           messages.push({ text: "GAME OVER", x: W / 2, y: HUD + 16 * TILE, time: 2, life: 2, size: 24 });
+          offerOnlineScoreEntry();
           return;
         }
 
@@ -1301,6 +1405,7 @@
     }
 
     function newGame() {
+      requestOnlineRunTicket();
       return gameLifecycle.startNewGame();
     }
 
@@ -1323,6 +1428,7 @@
       try { localStorage.setItem(GAMEPLAY_MODE_STORAGE_KEY, activeGameplayMode.id); } catch (_) {}
       highScore = readHighScore();
       renderGameplayMode();
+      refreshOnlineLeaderboard();
     }
 
     function toggleGameplayMode() {
@@ -2298,6 +2404,37 @@
       });
     }
 
+    leaderboardButton.addEventListener("click", async () => {
+      leaderboardScoreForm.hidden = true;
+      await refreshOnlineLeaderboard();
+      if (leaderboardAvailable) leaderboardDialog.showModal();
+    });
+
+    leaderboardDialog.addEventListener("click", event => {
+      if (event.target.dataset.action === "close-leaderboard") leaderboardDialog.close();
+    });
+
+    leaderboardScoreForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const name = leaderboardNameInput.value.trim();
+      if (!name || Array.from(name).length > 20 || /[\u0000-\u001F\u007F]/.test(name)) return;
+
+      try {
+        const result = await leaderboardRequest("POST", { action: "submit", runId: currentRunId, name, score });
+        currentRunId = null;
+        leaderboardScoreForm.hidden = true;
+        if (!result.accepted) {
+          leaderboardDialog.close();
+          return;
+        }
+        await refreshOnlineLeaderboard();
+      } catch (_) {
+        leaderboardAvailable = false;
+        leaderboardButton.hidden = !leaderboardAvailable;
+        leaderboardDialog.close();
+      }
+    });
+
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
       const dir = key === "arrowleft" || key === "a" ? DIRS.left
@@ -2390,6 +2527,7 @@
     renderGameplayMode();
     renderSoundMode();
     renderMusicMode();
+    refreshOnlineLeaderboard();
     requestAnimationFrame(gameLoop);
   })();
   </script>

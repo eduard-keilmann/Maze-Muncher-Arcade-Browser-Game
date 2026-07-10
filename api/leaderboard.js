@@ -154,7 +154,7 @@ module.exports = async function leaderboard(req, res) {
 
     for (let index = 0; index < rows.length; index += 2) {
       const entry = JSON.parse(Buffer.from(rows[index], "base64url").toString("utf8"));
-      leaderboardEntries.push({ ...entry, score: Number(rows[index + 1]) });
+      leaderboardEntries.push({ ...entry, score: Number(rows[index + 1]), mode });
     }
 
     return res.status(200).json({ entries: leaderboardEntries });

@@ -64,7 +64,7 @@ test("returns the top leaderboard entries for an allowed gameplay mode", async (
 
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.body, {
-    entries: [{ name: "Maze", score: 1200, createdAt: "2026-07-11T00:00:00Z" }]
+    entries: [{ name: "Maze", score: 1200, mode: "old-like", createdAt: "2026-07-11T00:00:00Z" }]
   });
 });
 

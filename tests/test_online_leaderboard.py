@@ -33,6 +33,10 @@ class OnlineLeaderboardTests(unittest.TestCase):
             re.compile(r'window\.addEventListener\("keydown",\s*event\s*=>\s*\{\s*if \(leaderboardDialog\.open\) return;\s*const key'),
         )
 
+    def test_leaderboard_shows_each_entrys_mode_and_reached_time(self):
+        self.assertRegex(HTML, re.compile(r'entry\.mode\s*===\s*"old-like"'))
+        self.assertRegex(HTML, re.compile(r'new Date\(entry\.createdAt\)\.toLocaleString\("de-DE"\)'))
+
 
 if __name__ == "__main__":
     unittest.main()

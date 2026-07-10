@@ -124,6 +124,7 @@
     .leaderboard-dialog ol { max-height: 45svh; margin: 0; padding-left: 2.4em; overflow: auto; }
     .leaderboard-dialog li { padding: 3px 0; }
     .leaderboard-entry-score { float: right; color: #fff7a5; }
+    .leaderboard-entry-details { display: block; color: #a7a6c7; font-size: 0.78rem; }
     .leaderboard-dialog form { display: grid; gap: 8px; margin-top: 16px; }
     .leaderboard-dialog input { min-width: 0; padding: 8px; border: 1px solid #3946d8; border-radius: 6px; background: #000; color: #fff; font: inherit; }
     .leaderboard-dialog menu { display: flex; justify-content: end; gap: 8px; margin: 16px 0 0; padding: 0; }
@@ -1136,10 +1137,13 @@
         const item = document.createElement("li");
         const name = document.createElement("span");
         const entryScore = document.createElement("span");
+        const details = document.createElement("small");
         name.textContent = entry.name;
         entryScore.className = "leaderboard-entry-score";
         entryScore.textContent = String(entry.score);
-        item.append(name, entryScore);
+        details.className = "leaderboard-entry-details";
+        details.textContent = `${entry.mode === "old-like" ? "OLD-LIKE" : "MAZE MUNCHER"} · ${new Date(entry.createdAt).toLocaleString("de-DE")}`;
+        item.append(name, entryScore, details);
         leaderboardList.append(item);
       }
     }

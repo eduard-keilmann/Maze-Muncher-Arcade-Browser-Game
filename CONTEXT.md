@@ -72,6 +72,26 @@ _Avoid_: original-like UI label, only available mode
 The mobile input family where whole-page continuous swipe, canvas tap-to-turn, and the touch D-pad all route into the shared direction input path.
 _Avoid_: separate mobile movement physics
 
+**Online leaderboard**:
+An optional shared ranking of completed game scores, stored outside the browser and unavailable without its server endpoint.
+_Avoid_: Redis connection from browser, replacement for local high score
+
+**Plausibility-checked run**:
+A completed game attempt accepted for the **Online leaderboard** after server-side consistency checks, without claiming proof that its browser client was unmodified.
+_Avoid_: cheat-proof score, server-authoritative game
+
+**Mode leaderboard**:
+The **Online leaderboard** ranking for exactly one **Gameplay mode**.
+_Avoid_: cross-mode leaderboard
+
+**Leaderboard name**:
+The freely chosen visible name attached to a **Plausibility-checked run**, limited to a trimmed, non-empty, control-character-free Unicode string of at most 20 characters.
+_Avoid_: account name, verified identity
+
+**Leaderboard entry**:
+A visible record of one **Plausibility-checked run**, consisting of its **Leaderboard name** and score.
+_Avoid_: player account, unique player record
+
 ## Relationships
 
 - **Original-like dynamics** may use original Pac-Man tables and mechanics while keeping Maze Muncher identity.
@@ -91,6 +111,12 @@ _Avoid_: separate mobile movement physics
 - **Old-like mode** is the current default **Gameplay mode**, but Maze Muncher mode remains selectable.
 - Each **Gameplay mode** has its own high score.
 - **Touch steering** should not create separate movement rules; it should feed the same direction path as keyboard controls.
+- An **Online leaderboard** is optional; its absence preserves the existing per-**Gameplay mode** local high score behavior.
+- An **Online leaderboard** ranks **Plausibility-checked runs** only.
+- An **Online leaderboard** contains one **Mode leaderboard** per **Gameplay mode**.
+- A **Plausibility-checked run** has one **Leaderboard name** and does not identify a real-world player.
+- A **Mode leaderboard** displays its top 100 **Leaderboard entries**.
+- Multiple **Leaderboard entries** may use the same **Leaderboard name**.
 
 ## Example Dialogue
 
@@ -116,3 +142,4 @@ _Avoid_: separate mobile movement physics
 - Current **Gameplay mode** should be visible during play through a compact footer label.
 - Current Old-like **Frightened time** tuning is `7`, `6`, `3.5`, `2`, and `0` seconds for level bands `1`, `2-4`, `5-8`, `9-16`, and `17+`.
 - Canvas tap-to-turn should choose direction relative to Maze Muncher position; continuous swipe should remain available and low-latency.
+- Online score validation should deter casual manipulation through run tickets, score and duration plausibility, one submission per run, and rate limiting; it is not server-authoritative gameplay.

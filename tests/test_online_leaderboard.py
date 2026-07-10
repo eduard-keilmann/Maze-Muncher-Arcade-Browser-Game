@@ -10,7 +10,9 @@ HTML = (PROJECT_ROOT / "maze_muncher_browser_arcade.html").read_text(encoding="u
 class OnlineLeaderboardTests(unittest.TestCase):
     def test_online_controls_stay_hidden_until_the_api_is_available(self):
         self.assertRegex(HTML, re.compile(r'data-action="leaderboard"[^>]*hidden'))
-        self.assertRegex(HTML, re.compile(r'const LEADERBOARD_API_URL\s*=\s*"https://maze-muncher-leaderboard\.vercel\.app"'))
+        self.assertRegex(HTML, re.compile(r'location\.hostname\s*===\s*"localhost"'))
+        self.assertRegex(HTML, re.compile(r'"http://localhost:3000"'))
+        self.assertRegex(HTML, re.compile(r'"https://maze-muncher-leaderboard\.vercel\.app"'))
         self.assertRegex(HTML, re.compile(r'leaderboardButton\.hidden\s*=\s*!leaderboardAvailable'))
         self.assertRegex(HTML, re.compile(r'AbortSignal\.timeout\(1000\)'))
 

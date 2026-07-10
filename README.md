@@ -92,6 +92,8 @@ The static game remains deployable on GitHub Pages. The optional API lives in `a
 
 The endpoint permits requests from the GitHub Pages origin and `http://localhost:<port>` for local development. Run `npx vercel dev` when testing the API locally; no Redis, Docker, or project dependency is required on the development machine when using the Upstash development database.
 
+For an end-to-end local check, create an ignored `.env.local` with the three variables above, start `npx vercel dev`, then serve this repository with `python3 -m http.server 8080`. Open `http://localhost:8080/maze_muncher_browser_arcade.html`; the game automatically uses `http://localhost:3000` for its leaderboard API.
+
 ## Project Notes
 
 - Main game file: `maze_muncher_browser_arcade.html`

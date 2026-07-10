@@ -470,7 +470,9 @@
     const GAMEPLAY_MODE_STORAGE_KEY = "mazeMuncherGameplayMode";
     const SOUND_STORAGE_KEY = "mazeMuncherSoundEnabled";
     const MUSIC_STORAGE_KEY = "mazeMuncherMusicEnabled";
-    const LEADERBOARD_API_URL = "https://maze-muncher-leaderboard.vercel.app";
+    const LEADERBOARD_API_URL = location.hostname === "localhost"
+      ? "http://localhost:3000"
+      : "https://maze-muncher-leaderboard.vercel.app";
     const DEFAULT_GAMEPLAY_MODE_ID = "old-like";
     const GAMEPLAY_MODES = [
       { id: "maze-muncher", label: "MODE: MAZE MUNCHER", footerLabel: "MAZE MUNCHER MODE", highScoreKey: "mazeMuncherHighScore" },

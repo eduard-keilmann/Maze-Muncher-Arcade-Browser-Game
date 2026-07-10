@@ -650,7 +650,7 @@
       "maze-muncher": {
         playerSpeed: (level) => Math.min(123.48, 99.225 + level * 2.75625),
         ghostSpeed: (level) => Math.min(119.07, 85.995 + level * 2.8665),
-        frightenedTime: (level) => Math.max(4.2, 7.5 - level * 0.25),
+        frightenedTime: (level) => Math.max(5.2, 8.5 - level * 0.25),
         fruitName: () => "cherry",
         fruitValue: (level, mark) => Math.min(5000, 100 + level * 100 + mark),
         ghostReleaseBase: (level) => Math.max(0, 2.5 - level * 0.15),
@@ -706,9 +706,9 @@
     }
 
     function oldLikeFrightenedTimeFor(level) {
-      if (level <= 1) return 8;
-      if (level <= 5) return level === 5 ? 4 : 6.5;
-      return OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime;
+      if (level <= 1) return 9;
+      if (level <= 5) return level === 5 ? 5 : 7.5;
+      return OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime + 1;
     }
 
     function fruitValueFor(mode, level, mark) {

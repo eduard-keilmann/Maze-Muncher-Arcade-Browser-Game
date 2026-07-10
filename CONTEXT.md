@@ -140,6 +140,6 @@ _Avoid_: player account, unique player record
 - Maze Muncher mode preserves current tuning unless a shared bug fix is needed.
 - **Gameplay mode** switching changes selected mode and displayed high score, but does not auto-start a run.
 - Current **Gameplay mode** should be visible during play through a compact footer label.
-- Current Old-like **Frightened time** tuning is `7`, `6`, `3.5`, `2`, and `0` seconds for level bands `1`, `2-4`, `5-8`, `9-16`, and `17+`.
+- Current Old-like **Frightened time** tuning is `9`, `7.5`, `4.5`, `3`, and `1` seconds for level bands `1`, `2-4`, `5-8`, `9-16`, and `17+`; level 5 is an exception at `5` seconds.
 - Canvas tap-to-turn should choose direction relative to Maze Muncher position; continuous swipe should remain available and low-latency.
 - Online score validation should deter casual manipulation through run tickets, score and duration plausibility, one submission per run, and rate limiting; it is not server-authoritative gameplay.

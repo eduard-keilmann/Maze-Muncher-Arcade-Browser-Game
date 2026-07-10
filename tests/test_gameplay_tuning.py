@@ -64,7 +64,7 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r'"maze-muncher":\s*\{', "Maze Muncher tuning block")
         assert_html_contains(self, r"playerSpeed:\s*\(level\)\s*=>\s*Math\.min\(123\.48,\s*99\.225 \+ level \* 2\.75625\)", "current player speed formula")
         assert_html_contains(self, r"ghostSpeed:\s*\(level\)\s*=>\s*Math\.min\(119\.07,\s*85\.995 \+ level \* 2\.8665\)", "current ghost speed formula")
-        assert_html_contains(self, r"frightenedTime:\s*\(level\)\s*=>\s*Math\.max\(4\.2,\s*7\.5 - level \* 0\.25\)", "current frightened-time formula")
+        assert_html_contains(self, r"frightenedTime:\s*\(level\)\s*=>\s*Math\.max\(5\.2,\s*8\.5 - level \* 0\.25\)", "frightened-time formula includes the one-second boost")
         assert_html_contains(self, r"fruitValue:\s*\(level,\s*mark\)\s*=>\s*Math\.min\(5000,\s*100 \+ level \* 100 \+ mark\)", "current fruit value formula")
         assert_html_contains(self, r"ghostReleaseBase:\s*\(level\)\s*=>\s*Math\.max\(0,\s*2\.5 - level \* 0\.15\)", "current ghost release formula")
         assert_html_contains(self, r"modeCycle:\s*\(\)\s*=>\s*MODE_CYCLE", "current scatter/chase cycle")
@@ -145,14 +145,14 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"tunnelGhostSpeedMultiplier:\s*0\.[0-9]+", "Old-like tunnel slowdown tuning exists")
 
 
-    def test_old_like_power_mode_duration_boosts_only_levels_1_to_5(self):
+    def test_old_like_power_mode_duration_adds_one_second_at_every_level(self):
         for pattern, label in [
             (r"function oldLikeFrightenedTimeFor\(level\)\s*\{", "Old-like frightened-time helper exists"),
-            (r"if\s*\(level <= 1\)\s*return\s*8;", "level 1 gets +1 second"),
-            (r"if\s*\(level <= 5\)\s*return\s*level === 5 \? 4 : 6\.5;", "levels 2 to 5 get +0.5 seconds"),
+            (r"if\s*\(level <= 1\)\s*return\s*9;", "level 1 gets one more second"),
+            (r"if\s*\(level <= 5\)\s*return\s*level === 5 \? 5 : 7\.5;", "levels 2 to 5 get one more second"),
             (
-                r"return\s+OLD_LIKE_LEVEL_BANDS\[levelBandFor\(level\)\]\.frightenedTime;",
-                "later levels fall back to unchanged band values",
+                r"return\s+OLD_LIKE_LEVEL_BANDS\[levelBandFor\(level\)\]\.frightenedTime \+ 1;",
+                "later levels get one more second",
             ),
             (
                 r"frightenedTime:\s*\(level\)\s*=>\s*oldLikeFrightenedTimeFor\(level\)",

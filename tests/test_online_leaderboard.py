@@ -27,6 +27,12 @@ class OnlineLeaderboardTests(unittest.TestCase):
         self.assertRegex(HTML, re.compile(r'function offerOnlineScoreEntry\(\)'))
         self.assertRegex(HTML, re.compile(r'loseLife\(\)\s*\{[\s\S]*?offerOnlineScoreEntry\(\)'))
 
+    def test_open_leaderboard_dialog_keeps_keystrokes_out_of_game_controls(self):
+        self.assertRegex(
+            HTML,
+            re.compile(r'window\.addEventListener\("keydown",\s*event\s*=>\s*\{\s*if \(leaderboardDialog\.open\) return;\s*const key'),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2438,6 +2438,7 @@
     });
 
     window.addEventListener("keydown", event => {
+      if (leaderboardDialog.open) return;
       const key = event.key.toLowerCase();
       const dir = key === "arrowleft" || key === "a" ? DIRS.left
         : key === "arrowright" || key === "d" ? DIRS.right

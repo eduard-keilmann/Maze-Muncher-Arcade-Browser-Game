@@ -590,28 +590,28 @@
       "level-1": {
         playerSpeed: 101.87,
         ghostSpeed: 93.5,
-        frightenedTime: 7,
+        frightenedTime: 9,
         ghostReleaseBase: 2.1,
         tunnelGhostSpeedMultiplier: 0.52
       },
       "levels-2-4": {
         playerSpeed: 108.82,
         ghostSpeed: 101.87,
-        frightenedTime: 6,
+        frightenedTime: 7.5,
         ghostReleaseBase: 1.8,
         tunnelGhostSpeedMultiplier: 0.55
       },
       "levels-5-8": {
         playerSpeed: 114.66,
         ghostSpeed: 111.13,
-        frightenedTime: 3.5,
+        frightenedTime: 4.5,
         ghostReleaseBase: 1.2,
         tunnelGhostSpeedMultiplier: 0.58
       },
       "levels-9-16": {
         playerSpeed: 119.29,
         ghostSpeed: 119.29,
-        frightenedTime: 2,
+        frightenedTime: 3,
         ghostReleaseBase: 0.7,
         tunnelGhostSpeedMultiplier: 0.62
       },
@@ -706,9 +706,8 @@
     }
 
     function oldLikeFrightenedTimeFor(level) {
-      if (level <= 1) return 9;
-      if (level <= 5) return level === 5 ? 5 : 7.5;
-      return OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime + 1;
+      if (level === 5) return 5;
+      return OLD_LIKE_LEVEL_BANDS[levelBandFor(level)].frightenedTime;
     }
 
     function fruitValueFor(mode, level, mark) {

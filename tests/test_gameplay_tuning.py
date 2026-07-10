@@ -145,14 +145,18 @@ class GameplayTuningTests(unittest.TestCase):
         assert_html_contains(self, r"tunnelGhostSpeedMultiplier:\s*0\.[0-9]+", "Old-like tunnel slowdown tuning exists")
 
 
-    def test_old_like_power_mode_duration_adds_one_second_at_every_level(self):
+    def test_old_like_power_mode_duration_uses_effective_band_values(self):
         for pattern, label in [
             (r"function oldLikeFrightenedTimeFor\(level\)\s*\{", "Old-like frightened-time helper exists"),
-            (r"if\s*\(level <= 1\)\s*return\s*9;", "level 1 gets one more second"),
-            (r"if\s*\(level <= 5\)\s*return\s*level === 5 \? 5 : 7\.5;", "levels 2 to 5 get one more second"),
+            (r'"level-1":\s*\{[\s\S]*?frightenedTime:\s*9', "level 1 effective band value"),
+            (r'"levels-2-4":\s*\{[\s\S]*?frightenedTime:\s*7\.5', "levels 2 to 4 effective band value"),
+            (r'"levels-5-8":\s*\{[\s\S]*?frightenedTime:\s*4\.5', "levels 5 to 8 effective band value"),
+            (r'"levels-9-16":\s*\{[\s\S]*?frightenedTime:\s*3', "levels 9 to 16 effective band value"),
+            (r'"levels-17-plus":\s*\{[\s\S]*?frightenedTime:\s*0', "level 17+ keeps no frightened time"),
+            (r"if\s*\(level === 5\)\s*return\s*5;", "level 5 remains the explicit exception"),
             (
-                r"return\s+OLD_LIKE_LEVEL_BANDS\[levelBandFor\(level\)\]\.frightenedTime \+ 1;",
-                "later levels get one more second",
+                r"return\s+OLD_LIKE_LEVEL_BANDS\[levelBandFor\(level\)\]\.frightenedTime;",
+                "other levels read their effective band value directly",
             ),
             (
                 r"frightenedTime:\s*\(level\)\s*=>\s*oldLikeFrightenedTimeFor\(level\)",

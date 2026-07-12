@@ -78,6 +78,13 @@ The Redis-backed API tests use Node's built-in test runner:
 node --test tests/leaderboard_api.test.cjs
 ```
 
+The prepared Cloudflare Worker contract is covered separately:
+
+```sh
+node --test tests/leaderboard_worker.test.mjs
+python3 -B tests/test_leaderboard_schema.py -q
+```
+
 ## Optional Online High Scores
 
 The static game remains deployable on GitHub Pages. The optional API lives in `api/leaderboard.js` and is deployed as the separate Vercel project `maze-muncher-leaderboard`.
@@ -93,6 +100,21 @@ The static game remains deployable on GitHub Pages. The optional API lives in `a
 The endpoint permits requests from the GitHub Pages origin and `http://localhost:<port>` for local development. Run `npx vercel dev` when testing the API locally; no Redis, Docker, or project dependency is required on the development machine when using the Upstash development database.
 
 For an end-to-end local check, create an ignored `.env.local` with the three variables above, start `npx vercel dev`, then serve this repository with `python3 -m http.server 8080`. Open `http://localhost:8080/maze_muncher_browser_arcade.html`; the game automatically uses `http://localhost:3000` for its leaderboard API.
+
+### Prepared Cloudflare D1 Alternative
+
+Vercel and Upstash remain the active production path. `src/leaderboard.mjs`, `migrations/0001_create_leaderboard.sql`, and `wrangler.toml` are a prepared, currently unused Cloudflare Worker + D1 equivalent. Its endpoint is deliberately the same `/api/leaderboard` contract, so the later browser change is only the production host in `LEADERBOARD_API_URL` inside `maze_muncher_browser_arcade.html`.
+
+When a migration is wanted:
+
+1. Create the D1 database: `npx wrangler d1 create maze-muncher-leaderboard`.
+2. Replace the placeholder `database_id` in `wrangler.toml` with the returned ID.
+3. Apply the schema: `npx wrangler d1 execute maze-muncher-leaderboard --remote --file=migrations/0001_create_leaderboard.sql`.
+4. Set a new private salt: `npx wrangler secret put LEADERBOARD_RATE_LIMIT_SALT`.
+5. Deploy the Worker: `npx wrangler deploy`.
+6. Copy the current public top 100 of both modes from Vercel/Upstash into D1, verify `https://<worker>.workers.dev/api/leaderboard?mode=old-like`, then replace only the production host in `LEADERBOARD_API_URL`.
+
+D1 does not synchronize with Upstash automatically. Do not switch the browser URL before the one-time data copy and Worker check. Rollback is simply restoring the existing Vercel host; entries written only to D1 are not copied back automatically.
 
 ## Project Notes
 

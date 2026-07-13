@@ -33,6 +33,17 @@ class OnlineLeaderboardTests(unittest.TestCase):
             re.compile(r'window\.addEventListener\("keydown",\s*event\s*=>\s*\{\s*if \(leaderboardDialog\.open\) return;\s*const key'),
         )
 
+    def test_opening_highscores_pauses_and_requires_an_explicit_resume(self):
+        self.assertRegex(
+            HTML,
+            re.compile(r'leaderboardButton\.addEventListener\("click",\s*async \(\) => \{\s*if \(state === "playing" \|\| state === "ready"\) paused = true;'),
+        )
+        self.assertIn("Press SPACE or tap the game screen to continue.", HTML)
+        self.assertRegex(
+            HTML,
+            re.compile(r'if \(touchStart\.target === canvas && !touchStart\.moved\) \{\s*if \(paused\) togglePause\(\);'),
+        )
+
     def test_leaderboard_shows_each_entrys_mode_and_reached_time(self):
         self.assertRegex(HTML, re.compile(r'entry\.mode\s*===\s*"old-like"'))
         self.assertRegex(HTML, re.compile(r'new Date\(entry\.createdAt\)\.toLocaleString\("de-DE"\)'))

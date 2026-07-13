@@ -2147,6 +2147,9 @@
           ctx.fillStyle = "#ffe94a";
           ctx.font = "28px ui-monospace, Menlo, monospace";
           ctx.fillText("PAUSED", W / 2, HUD + 15.5 * TILE);
+          ctx.fillStyle = "#fff";
+          ctx.font = "15px ui-monospace, Menlo, monospace";
+          ctx.fillText("Press SPACE or tap the game screen to continue.", W / 2, HUD + 17 * TILE);
         }
         ctx.restore();
       }
@@ -2326,7 +2329,8 @@
         const swipeStartedOnCanvas = touchStart.target === canvas;
         handlePageSwipeMove(event);
         if (touchStart.target === canvas && !touchStart.moved) {
-          applyPageSwipeDirection(directionFromCanvasTap(event));
+          if (paused) togglePause();
+          else applyPageSwipeDirection(directionFromCanvasTap(event));
           touchStart = null;
           return;
         }
@@ -2410,6 +2414,7 @@
     }
 
     leaderboardButton.addEventListener("click", async () => {
+      if (state === "playing" || state === "ready") paused = true;
       leaderboardScoreForm.hidden = true;
       await refreshOnlineLeaderboard();
       if (leaderboardAvailable) leaderboardDialog.showModal();

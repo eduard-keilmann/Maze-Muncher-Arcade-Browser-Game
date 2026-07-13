@@ -35,6 +35,28 @@ test("accepts the browser CORS preflight from GitHub Pages", async () => {
   assert.match(res.headers["Access-Control-Allow-Methods"], /POST/);
 });
 
+test("does not allow an unconfigured localhost origin", async () => {
+  const res = response();
+  await leaderboard({
+    method: "OPTIONS",
+    headers: { origin: "http://localhost:4173" }
+  }, res);
+
+  assert.equal(res.statusCode, 204);
+  assert.equal(res.headers["Access-Control-Allow-Origin"], undefined);
+});
+
+test("allows the documented localhost origin", async () => {
+  const res = response();
+  await leaderboard({
+    method: "OPTIONS",
+    headers: { origin: "http://localhost:8080" }
+  }, res);
+
+  assert.equal(res.statusCode, 204);
+  assert.equal(res.headers["Access-Control-Allow-Origin"], "http://localhost:8080");
+});
+
 test("returns the top leaderboard entries for an allowed gameplay mode", async () => {
   const originalFetch = global.fetch;
   const originalEnv = { ...process.env };

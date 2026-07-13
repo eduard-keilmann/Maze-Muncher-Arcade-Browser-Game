@@ -1,4 +1,5 @@
 const GITHUB_PAGES_ORIGIN = "https://eduard-keilmann.github.io";
+const LOCAL_ORIGIN = "http://localhost:8080";
 const GAMEPLAY_MODES = new Set(["maze-muncher", "old-like"]);
 const RUN_TTL_MS = 4 * 60 * 60 * 1000;
 
@@ -6,8 +7,13 @@ function responseHeaders(request) {
   const headers = new Headers({ "Content-Type": "application/json" });
   const origin = request.headers.get("Origin");
 
-  if (origin === GITHUB_PAGES_ORIGIN || /^http:\/\/localhost:\d+$/.test(origin || "")) {
-    headers.set("Access-Control-Allow-Origin", origin);
+  if (origin === GITHUB_PAGES_ORIGIN) {
+    headers.set("Access-Control-Allow-Origin", GITHUB_PAGES_ORIGIN);
+  } else if (origin === LOCAL_ORIGIN) {
+    headers.set("Access-Control-Allow-Origin", LOCAL_ORIGIN);
+  }
+
+  if (origin === GITHUB_PAGES_ORIGIN || origin === LOCAL_ORIGIN) {
     headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     headers.set("Access-Control-Allow-Headers", "Content-Type");
     headers.set("Vary", "Origin");

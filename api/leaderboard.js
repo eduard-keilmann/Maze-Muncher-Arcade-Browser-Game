@@ -1,4 +1,5 @@
 const ALLOWED_ORIGIN = "https://eduard-keilmann.github.io";
+const LOCAL_ORIGIN = "http://localhost:8080";
 const GAMEPLAY_MODES = new Set(["maze-muncher", "old-like"]);
 const { createHash, randomUUID } = require("node:crypto");
 
@@ -18,8 +19,13 @@ async function redis(commands) {
 
 module.exports = async function leaderboard(req, res) {
   const origin = req.headers.origin;
-  if (origin === ALLOWED_ORIGIN || /^http:\/\/localhost:\d+$/.test(origin || "")) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+  if (origin === ALLOWED_ORIGIN) {
+    res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+  } else if (origin === LOCAL_ORIGIN) {
+    res.setHeader("Access-Control-Allow-Origin", LOCAL_ORIGIN);
+  }
+
+  if (origin === ALLOWED_ORIGIN || origin === LOCAL_ORIGIN) {
     res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");

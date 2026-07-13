@@ -17,6 +17,32 @@ test("accepts the browser CORS preflight from GitHub Pages", async () => {
   assert.match(response.headers.get("Access-Control-Allow-Methods"), /POST/);
 });
 
+test("does not allow an unconfigured localhost origin", async () => {
+  const response = await worker.fetch(
+    new Request("https://maze-muncher-leaderboard.example.workers.dev/api/leaderboard", {
+      method: "OPTIONS",
+      headers: { Origin: "http://localhost:4173" }
+    }),
+    {}
+  );
+
+  assert.equal(response.status, 204);
+  assert.equal(response.headers.get("Access-Control-Allow-Origin"), null);
+});
+
+test("allows the documented localhost origin", async () => {
+  const response = await worker.fetch(
+    new Request("https://maze-muncher-leaderboard.example.workers.dev/api/leaderboard", {
+      method: "OPTIONS",
+      headers: { Origin: "http://localhost:8080" }
+    }),
+    {}
+  );
+
+  assert.equal(response.status, 204);
+  assert.equal(response.headers.get("Access-Control-Allow-Origin"), "http://localhost:8080");
+});
+
 test("returns the selected mode's top scores to the GitHub Pages origin", async () => {
   const response = await worker.fetch(
     new Request("https://maze-muncher-leaderboard.example.workers.dev/api/leaderboard?mode=old-like", {
